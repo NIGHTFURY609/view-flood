@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.bump_need_pledge() FROM anon, authenticated, PUBLIC;

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.bump_camp_checkin() FROM PUBLIC, anon, authenticated;
