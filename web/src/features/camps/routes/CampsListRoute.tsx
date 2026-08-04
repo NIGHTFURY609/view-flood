@@ -41,11 +41,12 @@ export function CampsListRoute() {
   }, [t]);
 
   const params = useMemo<CampsQueryParams>(() => {
+    const useCoords = coords && !values.district;
     const base: CampsQueryParams = {
       status: values.status,
       limit: PAGE_SIZE,
       cursor: values.page > 1 ? String((values.page - 1) * PAGE_SIZE) : "",
-      sort: coords ? "distance" : "urgency",
+      sort: useCoords ? "distance" : "urgency",
     };
     return {
       ...base,
@@ -55,7 +56,7 @@ export function CampsListRoute() {
       ...(values.q ? { q: values.q } : {}),
       ...(values.amenities ? { amenities: values.amenities } : {}),
       ...(values.verified ? { verified_only: true } : {}),
-      ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
+      ...(useCoords ? { lat: coords.lat, lng: coords.lng } : {}),
     };
   }, [values, coords]);
 
