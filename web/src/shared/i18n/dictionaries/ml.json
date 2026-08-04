@@ -274,5 +274,6 @@
   "weather.rain24": "കഴിഞ്ഞ 24 മണിക്കൂർ മഴ",
   "weather.rainNext": "അടുത്ത 24 മണിക്കൂർ മഴ",
   "weather.source": "ഉറവിടം: Open-Meteo",
-  "weather.title": "കാലാവസ്ഥ"
+  "weather.title": "കാലാവസ്ഥ",
+  "survey.button": "ക്യാമ്പ് സ്ഥിതി അറിയിക്കൂ"
 }

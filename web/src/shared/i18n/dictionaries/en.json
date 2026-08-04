@@ -274,5 +274,6 @@
   "weather.rain24": "Rain, last 24h",
   "weather.rainNext": "Rain, next 24h",
   "weather.source": "Source: Open-Meteo",
-  "weather.title": "Weather"
+  "weather.title": "Weather",
+  "survey.button": "Camp Status Survey"
 }
