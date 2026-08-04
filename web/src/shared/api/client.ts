@@ -35,6 +35,19 @@ import type {
 
 const BASE_URL = (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "/api/v1";
 
+/**
+ * Requests must not hang forever.
+ *
+ * The API runs on Render's free tier, which spins down when idle and can take
+ * the better part of a minute to wake. Without a ceiling, a seeker on a bad
+ * connection sits on a spinner with no way to tell whether anything is
+ * happening. A bounded failure surfaces the retry button and the cached
+ * last-seen camps instead.
+ *
+ * Generous because a cold start is a real, recoverable condition — not a bug.
+ */
+const REQUEST_TIMEOUT_MS = 45_000;
+
 type Query = Record<string, string | number | boolean | null | undefined>;
 
 function buildUrl(path: string, query?: Query): string {
@@ -48,6 +61,39 @@ function buildUrl(path: string, query?: Query): string {
   }
   const qs = params.toString();
   return qs ? `${url}?${qs}` : url;
+}
+
+/**
+ * Combine the caller's cancellation with our own deadline.
+ *
+ * `AbortSignal.any` only landed in Chrome 116 / Safari 17.4, and a meaningful
+ * share of the phones this app is built for are older than that. The manual
+ * controller path is the one those devices actually take.
+ */
+function withDeadline(caller?: AbortSignal): { signal: AbortSignal; dispose: () => void } {
+  if (typeof AbortSignal.any === "function" && typeof AbortSignal.timeout === "function") {
+    const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+    return {
+      signal: caller ? AbortSignal.any([caller, timeout]) : timeout,
+      dispose: () => undefined,
+    };
+  }
+
+  const controller = new AbortController();
+  const timer = window.setTimeout(
+    () => controller.abort(new DOMException("Timed out", "TimeoutError")),
+    REQUEST_TIMEOUT_MS,
+  );
+  const forward = () => controller.abort();
+  caller?.addEventListener("abort", forward);
+
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      window.clearTimeout(timer);
+      caller?.removeEventListener("abort", forward);
+    },
+  };
 }
 
 interface RequestOptions {
@@ -68,6 +114,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
+  const { signal: combined, dispose } = withDeadline(signal);
+
   let response: Response;
   try {
     response = await fetch(buildUrl(path, query), {
@@ -75,13 +123,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       headers,
       body:
         body === undefined ? null : body instanceof FormData ? body : JSON.stringify(body),
-      ...(signal ? { signal } : {}),
+      signal: combined,
     });
   } catch (cause) {
-    // Distinguish "the network is gone" from "the server said no" — the offline
-    // UI depends on it.
-    if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
+    // A caller-initiated abort is not an error to report — the component went
+    // away. A timeout or a dead network is, and the offline UI branches on it.
+    if (signal?.aborted) throw cause;
+    if (cause instanceof DOMException && cause.name === "TimeoutError") {
+      throw new ApiError(0, "network_error", "The server took too long to respond");
+    }
     throw new ApiError(0, "network_error", "Could not reach the server");
+  } finally {
+    dispose();
   }
 
   if (response.status === 204) return undefined as T;

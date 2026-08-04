@@ -122,6 +122,8 @@
   "filter.district": "ജില്ല",
   "filter.item": "സാധനം",
   "filter.lsg": "തദ്ദേശ സ്ഥാപനം",
+  "filter.lsgName": "തദ്ദേശ സ്ഥാപനത്തിന്റെ പേര്",
+  "filter.lsgType": "തദ്ദേശ സ്ഥാപന തരം",
   "filter.reset": "ഫിൽട്ടറുകൾ മായ്ക്കുക",
   "filter.search": "ക്യാമ്പ്, സ്ഥലം അല്ലെങ്കിൽ അടയാളം തിരയുക",
   "filter.status": "അവസ്ഥ",

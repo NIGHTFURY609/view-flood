@@ -223,7 +223,7 @@ export function CampsListRoute() {
             <EmptyState
               icon={<Filter className="size-6" aria-hidden="true" />}
               title={t("list.empty")}
-              hint={values.district ? t("list.emptyHint") : t("list.pickDistrict")}
+              hint={t("list.emptyHint")}
               action={
                 <Button variant="outline" size="sm" onClick={reset}>
                   {t("filter.reset")}

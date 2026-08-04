@@ -15,6 +15,7 @@ from app.db.session import Database
 from app.db.supabase_rest import SupabaseRest
 from app.services.admin_service import AdminService
 from app.services.camps_service import CampsService
+from app.services.camps_sql_service import CampsSqlService
 from app.services.checkin_service import CheckInService
 from app.services.image_service import ImageService
 from app.services.needs_service import NeedsService
@@ -32,7 +33,16 @@ def get_db(request: Request) -> Database:
     return database
 
 
-def get_camps_service(request: Request) -> CampsService:
+def get_camps_service(request: Request) -> CampsService | CampsSqlService:
+    """Prefer direct Postgres once it is configured.
+
+    Serving reads from PostgREST while writes go to a database would put them in
+    different places — a freshly submitted report would be invisible in the
+    list. The REST path stays only as the no-credentials fallback.
+    """
+    database: Database = request.app.state.db
+    if database.configured:
+        return CampsSqlService(database)
     return CampsService(request.app.state.rest)
 
 
@@ -73,7 +83,7 @@ def get_admin_auth(request: Request) -> AdminAuth:
 
 RestDep = Annotated[SupabaseRest, Depends(get_rest)]
 DatabaseDep = Annotated[Database, Depends(get_db)]
-CampsServiceDep = Annotated[CampsService, Depends(get_camps_service)]
+CampsServiceDep = Annotated[CampsService | CampsSqlService, Depends(get_camps_service)]
 OtpServiceDep = Annotated[OtpService, Depends(get_otp_service)]
 ImageServiceDep = Annotated[ImageService, Depends(get_image_service)]
 ReportServiceDep = Annotated[ReportService, Depends(get_report_service)]

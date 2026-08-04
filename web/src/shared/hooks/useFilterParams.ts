@@ -61,7 +61,10 @@ export const campListFilterSchema = z.object({
   district: z.string().trim().max(4).catch("").default(""),
   taluk: z.string().trim().max(80).catch("").default(""),
   lsg: z.string().trim().max(120).catch("").default(""),
-  status: z.enum(["active", "inactive", "predesignated", "all"]).catch("predesignated"),
+  // Every camp now comes from community reporting, so "open now" is the
+  // useful default. The pre-designated government sheet is no longer the
+  // data source, and that filter would match nothing.
+  status: z.enum(["active", "inactive", "predesignated", "all"]).catch("active"),
   verified: z
     .union([z.literal("true"), z.literal("false")])
     .transform((v) => v === "true")

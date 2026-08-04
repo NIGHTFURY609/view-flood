@@ -12,6 +12,7 @@ when no connection string has been supplied yet.
 
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
@@ -28,6 +29,23 @@ MISSING_DB_MESSAGE = (
     "This action needs database credentials that are not configured yet. "
     "Set SUPABASE_DB_URL in apps/api/.env."
 )
+
+
+async def _register_codecs(connection: asyncpg.Connection) -> None:
+    """Decode json/jsonb into Python objects.
+
+    Without this asyncpg hands back the raw JSON *string*, so `auto_flags`
+    arrives as '["a","b"]' rather than a list — and the admin queue, which maps
+    over it to render flag chips, would iterate the characters of that string
+    instead. Audit before/after snapshots have the same problem.
+    """
+    for type_name in ("json", "jsonb"):
+        await connection.set_type_codec(
+            type_name,
+            encoder=json.dumps,
+            decoder=json.loads,
+            schema="pg_catalog",
+        )
 
 
 class Database:
@@ -54,6 +72,7 @@ class Database:
             max_size=10,
             statement_cache_size=0,
             command_timeout=20,
+            init=_register_codecs,
         )
         log.info("db_pool_started")
 

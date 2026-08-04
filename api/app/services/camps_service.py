@@ -76,7 +76,7 @@ class CampsService:
         taluk: str | None = None,
         lsg_name: str | None = None,
         amenities: str | None = None,
-        status: str = "predesignated",
+        status: str = "active",
         verified_only: bool = False,
         q: str | None = None,
         lat: float | None = None,

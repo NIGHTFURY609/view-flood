@@ -26,9 +26,10 @@ import { cn } from "@/shared/lib/cn";
 
 const ALL = "__all__";
 
+// "Government list" is deliberately absent: the pre-designated sheet is no
+// longer a data source, so that option would always return nothing.
 const STATUS_OPTIONS: ReadonlyArray<{ value: CampListFilters["status"]; labelKey: DictKey }> = [
   { value: "active", labelKey: "filter.statusActive" },
-  { value: "predesignated", labelKey: "filter.statusPredesignated" },
   { value: "inactive", labelKey: "filter.statusInactive" },
   { value: "all", labelKey: "filter.statusAll" },
 ];
@@ -92,7 +93,7 @@ export function CampFilters({ values, onChange, onReset }: CampFiltersProps) {
     values.q !== "" ||
     values.amenities !== "" ||
     values.verified ||
-    values.status !== "predesignated";
+    values.status !== "active";
 
   return (
     <div className="flex flex-col gap-4">
