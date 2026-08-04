@@ -106,20 +106,23 @@ class AdminService:
         note: str | None = None,
     ) -> dict[str, Any]:
         before = await connection.fetchrow(
-            f"SELECT {CAMP_SNAPSHOT_COLUMNS} FROM camps WHERE id = $1", camp_id
+            f"SELECT {CAMP_SNAPSHOT_COLUMNS} FROM camps WHERE id = $1::uuid", camp_id
         )
         if before is None:
             raise NotFoundError("That camp does not exist")
 
+        # $2 is bound once but used two ways — as the enum being assigned and as
+        # a value compared to a text literal. Without explicit casts Postgres
+        # cannot deduce a single type for it and rejects the statement.
         after = await connection.fetchrow(
             f"""
             UPDATE camps
-            SET verification_state = $2,
-                verified_at = CASE WHEN $2 = 'verified' THEN now() ELSE NULL END,
-                verified_by = CASE WHEN $2 = 'verified' THEN $3::uuid ELSE NULL END,
-                verification_method = $4,
+            SET verification_state = $2::verification_state,
+                verified_at = CASE WHEN $2::text = 'verified' THEN now() ELSE NULL END,
+                verified_by = CASE WHEN $2::text = 'verified' THEN $3::uuid ELSE NULL END,
+                verification_method = $4::verification_method,
                 verification_note = $5
-            WHERE id = $1
+            WHERE id = $1::uuid
             RETURNING {CAMP_SNAPSHOT_COLUMNS}
             """,
             camp_id,
@@ -161,25 +164,31 @@ class AdminService:
             raise ConflictError("A camp cannot be merged into itself")
 
         duplicate = await connection.fetchrow(
-            f"SELECT {CAMP_SNAPSHOT_COLUMNS} FROM camps WHERE id = $1", duplicate_id
+            f"SELECT {CAMP_SNAPSHOT_COLUMNS} FROM camps WHERE id = $1::uuid", duplicate_id
         )
-        canonical = await connection.fetchrow("SELECT id FROM camps WHERE id = $1", canonical_id)
+        canonical = await connection.fetchrow(
+            "SELECT id FROM camps WHERE id = $1::uuid", canonical_id
+        )
         if duplicate is None or canonical is None:
             raise NotFoundError("One of those camps does not exist")
 
         # Move corroborating evidence onto the surviving record.
         await connection.execute(
-            "UPDATE reports SET camp_id = $2 WHERE camp_id = $1", duplicate_id, canonical_id
+            "UPDATE reports SET camp_id = $2::uuid WHERE camp_id = $1::uuid",
+            duplicate_id,
+            canonical_id,
         )
         await connection.execute(
-            "UPDATE report_images SET camp_id = $2 WHERE camp_id = $1", duplicate_id, canonical_id
+            "UPDATE report_images SET camp_id = $2::uuid WHERE camp_id = $1::uuid",
+            duplicate_id,
+            canonical_id,
         )
         await connection.execute(
             """
             UPDATE camps
             SET report_count = report_count + COALESCE(
-                    (SELECT report_count FROM camps WHERE id = $2), 0)
-            WHERE id = $1
+                    (SELECT report_count FROM camps WHERE id = $2::uuid), 0)
+            WHERE id = $1::uuid
             """,
             canonical_id,
             duplicate_id,
@@ -190,7 +199,7 @@ class AdminService:
             UPDATE camps
             SET verification_state = 'duplicate_held', duplicate_of = $2::uuid,
                 verification_note = $3
-            WHERE id = $1
+            WHERE id = $1::uuid
             RETURNING {CAMP_SNAPSHOT_COLUMNS}
             """,
             duplicate_id,
@@ -221,14 +230,14 @@ class AdminService:
     ) -> None:
         """The fix for the prototype's inert flag button: this actually hides."""
         updated = await connection.fetchval(
-            "UPDATE report_images SET hidden = true WHERE id = $1 RETURNING id", image_id
+            "UPDATE report_images SET hidden = true WHERE id = $1::uuid RETURNING id", image_id
         )
         if updated is None:
             raise NotFoundError("That photo does not exist")
 
         await connection.execute(
             "UPDATE image_flags SET resolved_at = now(), resolved_by = $2::uuid "
-            "WHERE image_id = $1 AND resolved_at IS NULL",
+            "WHERE image_id = $1::uuid AND resolved_at IS NULL",
             image_id,
             admin_id,
         )

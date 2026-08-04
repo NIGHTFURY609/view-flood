@@ -12,7 +12,9 @@ describe("campListFilterSchema", () => {
     const parsed = campListFilterSchema.parse({});
     expect(parsed).toMatchObject({
       district: "",
-      status: "predesignated",
+      // Every camp is community-reported now, so "open now" is the useful
+      // default; the government pre-designated sheet is no longer a source.
+      status: "active",
       verified: false,
       view: "card",
       page: 1,
@@ -31,7 +33,7 @@ describe("campListFilterSchema", () => {
       page: "-9",
       verified: "maybe",
     });
-    expect(parsed.status).toBe("predesignated");
+    expect(parsed.status).toBe("active");
     expect(parsed.view).toBe("card");
     expect(parsed.page).toBe(1);
     expect(parsed.verified).toBe(false);

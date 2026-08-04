@@ -122,6 +122,8 @@
   "filter.district": "District",
   "filter.item": "Item",
   "filter.lsg": "Local body",
+  "filter.lsgName": "Local body name",
+  "filter.lsgType": "Local body type",
   "filter.reset": "Reset filters",
   "filter.search": "Search camp, place or landmark",
   "filter.status": "Status",

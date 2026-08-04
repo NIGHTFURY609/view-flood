@@ -22,7 +22,11 @@ class Settings(BaseSettings):
 
     # --- Supabase -----------------------------------------------------------
     supabase_url: str = Field(..., alias="SUPABASE_URL")
-    supabase_publishable_key: str = Field(..., alias="SUPABASE_PUBLISHABLE_KEY")
+
+    # Only needed for admin sign-in (the Supabase Auth apikey header) and the
+    # PostgREST fallback. Optional so a missing value degrades those paths
+    # rather than preventing the service from booting at all.
+    supabase_publishable_key: str = Field(default="", alias="SUPABASE_PUBLISHABLE_KEY")
 
     # Absent until the operator pulls it from the Lovable dashboard. Every
     # privileged path checks for it and returns 503 rather than crashing, so
@@ -54,7 +58,17 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        """Browsers send `Origin` with no trailing slash.
+
+        A configured value like "https://app.vercel.app/" would silently match
+        nothing and every cross-origin request would fail, so normalise here
+        rather than rely on whoever fills in the dashboard field.
+        """
+        return [
+            origin.strip().rstrip("/")
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
 
     @property
     def has_privileged_access(self) -> bool:

@@ -119,7 +119,7 @@ export function StepLocation({
         </Select>
       </Field>
 
-      <Field id="report-lsg-type" label={t("filter.lsg")} error={errors["lsgType"]}>
+      <Field id="report-lsg-type" label={t("filter.lsgType")} error={errors["lsgType"]}>
         <Select
           value={draft.lsgType}
           onValueChange={(next) =>
@@ -137,7 +137,7 @@ export function StepLocation({
         </Select>
       </Field>
 
-      <Field id="report-lsg" label={t("filter.lsg")} error={errors["lsgName"]}>
+      <Field id="report-lsg" label={t("filter.lsgName")} error={errors["lsgName"]}>
         {/* Free text as well as a picker: a new camp may sit in an LSG that is
             not in the seeded list. */}
         <Input

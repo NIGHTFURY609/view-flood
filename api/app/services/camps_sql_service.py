@@ -1,0 +1,295 @@
+"""Camp reads over direct Postgres.
+
+This is the real read path. `camps_service.CampsService` (PostgREST) remains as
+a fallback for running without database credentials, but once SUPABASE_DB_URL is
+set this takes over — otherwise reads and writes would target different
+databases and a freshly submitted report would be invisible in the list.
+
+Everything the prototype did in the browser over a 3,000-row download happens
+here in SQL: filtering, search, pagination and distance ranking.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+import asyncpg
+
+from app.db.session import Database
+from app.schemas.camps import CampDetail, CampListItem, CampNeed, CampNeedSummary
+
+# Explicit column lists. Never SELECT * — the response model is the
+# data-exposure boundary and it should be obvious what crosses it.
+LIST_COLUMNS = """
+    id, name, name_ml, district_code, taluk, lsg_name, village_or_locality,
+    latitude, longitude, status, verification_state, urgency, reported_urgency,
+    camp_phone_primary, amenities, reported_people_count, reported_family_count,
+    reported_children_count, checkin_count, report_count,
+    status_last_confirmed_at, updated_at
+"""
+
+DETAIL_COLUMNS = (
+    LIST_COLUMNS
+    + """,
+    building_type, lsg_type, landmark, camp_incharge_name, camp_phone_secondary,
+    verified_at, verification_method, verification_note, occupancy_updated_at,
+    source_published_at
+"""
+)
+
+NEED_COLUMNS = """
+    id, camp_id, item_key, label, unit, needed_qty, pledged_qty, urgency, note, updated_at
+"""
+
+PUBLIC_STATES = ("unverified", "verified")
+
+
+def _row_to_list_item(row: asyncpg.Record, distance_km: float | None = None) -> CampListItem:
+    data: dict[str, Any] = dict(row)
+    data["id"] = str(data["id"])
+    data["amenities"] = list(data.get("amenities") or [])
+    data["latitude"] = float(data["latitude"]) if data.get("latitude") is not None else None
+    data["longitude"] = float(data["longitude"]) if data.get("longitude") is not None else None
+    data["distance_km"] = distance_km
+    data.pop("distance_m", None)
+    data["top_needs"] = []
+    return CampListItem.model_validate(data)
+
+
+class CampsSqlService:
+    def __init__(self, db: Database) -> None:
+        self._db = db
+
+    async def list_camps(
+        self,
+        *,
+        district_code: str | None = None,
+        taluk: str | None = None,
+        lsg_name: str | None = None,
+        amenities: str | None = None,
+        status: str = "active",
+        verified_only: bool = False,
+        q: str | None = None,
+        lat: float | None = None,
+        lng: float | None = None,
+        sort: str = "urgency",
+        offset: int = 0,
+        limit: int = 24,
+    ) -> tuple[list[CampListItem], int | None]:
+        # $1 is always the allowed-state list, so it is always referenced —
+        # rewriting the predicate instead would leave $1 unbound.
+        states = ["verified"] if verified_only else list(PUBLIC_STATES)
+        where: list[str] = ["verification_state = ANY($1::verification_state[])"]
+        args: list[Any] = [states]
+
+        def add(clause: str, value: Any) -> None:
+            args.append(value)
+            where.append(clause.format(n=len(args)))
+
+        if status == "active":
+            where.append("status = 'active'")
+        elif status == "inactive":
+            where.append("status = 'inactive'")
+        elif status == "predesignated":
+            where.append("report_count = 0 AND status <> 'active'")
+
+        if district_code:
+            add("district_code = ${n}", district_code)
+        if taluk:
+            add("taluk = ${n}", taluk)
+        if lsg_name:
+            add("lsg_name = ${n}", lsg_name)
+        if amenities:
+            keys = [a.strip() for a in amenities.split(",") if a.strip()]
+            if keys:
+                # "has ALL of these facilities" — backed by the GIN index.
+                add("amenities @> ${n}::text[]", keys)
+        if q:
+            # Trigram-backed; matches substrings the way people actually search.
+            add(
+                "(name ILIKE '%' || ${n} || '%' OR name_ml ILIKE '%' || ${n} || '%' "
+                "OR village_or_locality ILIKE '%' || ${n} || '%' "
+                "OR landmark ILIKE '%' || ${n} || '%')",
+                q,
+            )
+
+        clause = " AND ".join(where)
+        geo = sort == "distance" and lat is not None and lng is not None
+
+        async with self._db.acquire() as connection:
+            total = await connection.fetchval(
+                f"SELECT count(*) FROM camps WHERE {clause}", *args
+            )
+
+            if geo:
+                # Indexed radius shortlist, then exact ordering by true distance.
+                args.extend([lat, lng, limit, offset])
+                lat_i, lng_i = len(args) - 3, len(args) - 2
+                limit_i, offset_i = len(args) - 1, len(args)
+                rows = await connection.fetch(
+                    f"""
+                    SELECT {LIST_COLUMNS},
+                           earth_distance(
+                               ll_to_earth(${lat_i}, ${lng_i}),
+                               ll_to_earth(latitude::float8, longitude::float8)
+                           ) AS distance_m
+                    FROM camps
+                    WHERE {clause}
+                      AND latitude IS NOT NULL AND longitude IS NOT NULL
+                    ORDER BY distance_m ASC
+                    LIMIT ${limit_i} OFFSET ${offset_i}
+                    """,
+                    *args,
+                )
+                items = [
+                    _row_to_list_item(row, round(float(row["distance_m"]) / 1000, 2))
+                    for row in rows
+                ]
+            else:
+                order = (
+                    "urgency DESC, status_last_confirmed_at DESC NULLS LAST"
+                    if sort == "urgency"
+                    else "updated_at DESC"
+                )
+                args.extend([limit, offset])
+                rows = await connection.fetch(
+                    f"""
+                    SELECT {LIST_COLUMNS}
+                    FROM camps
+                    WHERE {clause}
+                    ORDER BY {order}, id DESC
+                    LIMIT ${len(args) - 1} OFFSET ${len(args)}
+                    """,
+                    *args,
+                )
+                items = [_row_to_list_item(row) for row in rows]
+
+            await self._attach_top_needs(connection, items)
+
+        return items, total
+
+    async def _attach_top_needs(
+        self, connection: asyncpg.Connection, items: list[CampListItem]
+    ) -> None:
+        """One query for the page, not one per card."""
+        if not items:
+            return
+
+        rows = await connection.fetch(
+            """
+            SELECT camp_id, item_key, urgency
+            FROM (
+                SELECT camp_id, item_key, urgency,
+                       row_number() OVER (PARTITION BY camp_id ORDER BY urgency DESC) AS rn
+                FROM camp_needs
+                WHERE camp_id = ANY($1::uuid[])
+            ) ranked
+            WHERE rn <= 5
+            """,
+            [item.id for item in items],
+        )
+
+        by_camp: dict[str, list[CampNeedSummary]] = {}
+        for row in rows:
+            by_camp.setdefault(str(row["camp_id"]), []).append(
+                CampNeedSummary(item_key=row["item_key"], urgency=row["urgency"])
+            )
+
+        for item in items:
+            item.top_needs = by_camp.get(item.id, [])
+
+    async def get_camp(self, camp_id: str) -> CampDetail | None:
+        row = await self._db.fetchrow(
+            f"""
+            SELECT {DETAIL_COLUMNS}
+            FROM camps
+            WHERE id = $1::uuid AND verification_state = ANY($2::verification_state[])
+            """,
+            camp_id,
+            list(PUBLIC_STATES),
+        )
+        if row is None:
+            return None
+
+        data: dict[str, Any] = dict(row)
+        data["id"] = str(data["id"])
+        data["amenities"] = list(data.get("amenities") or [])
+        data["latitude"] = float(data["latitude"]) if data.get("latitude") is not None else None
+        data["longitude"] = float(data["longitude"]) if data.get("longitude") is not None else None
+        data["distance_km"] = None
+        data["top_needs"] = []
+        data["sources"] = []
+        return CampDetail.model_validate(data)
+
+    async def camps_by_ids(self, ids: list[str]) -> list[CampListItem]:
+        if not ids:
+            return []
+        rows = await self._db.fetch(
+            f"""
+            SELECT {LIST_COLUMNS}
+            FROM camps
+            WHERE id = ANY($1::uuid[]) AND verification_state = ANY($2::verification_state[])
+            """,
+            ids[:500],
+            list(PUBLIC_STATES),
+        )
+        return [_row_to_list_item(row) for row in rows]
+
+    async def camp_needs(self, camp_id: str) -> list[CampNeed]:
+        rows = await self._db.fetch(
+            f"""
+            SELECT {NEED_COLUMNS}
+            FROM camp_needs
+            WHERE camp_id = $1::uuid
+            ORDER BY urgency DESC, item_key ASC
+            """,
+            camp_id,
+        )
+        return [
+            CampNeed.model_validate({**dict(r), "id": str(r["id"]), "camp_id": str(r["camp_id"])})
+            for r in rows
+        ]
+
+    async def list_needs(
+        self,
+        *,
+        district_code: str | None = None,
+        item_key: str | None = None,
+        offset: int = 0,
+        limit: int = 30,
+    ) -> tuple[list[CampNeed], int | None]:
+        where: list[str] = ["TRUE"]
+        args: list[Any] = []
+
+        if district_code:
+            args.append(district_code)
+            where.append(
+                f"camp_id IN (SELECT id FROM camps WHERE district_code = ${len(args)})"
+            )
+        if item_key:
+            args.append(item_key)
+            where.append(f"item_key = ${len(args)}")
+
+        clause = " AND ".join(where)
+
+        async with self._db.acquire() as connection:
+            total = await connection.fetchval(
+                f"SELECT count(*) FROM camp_needs WHERE {clause}", *args
+            )
+            args.extend([limit, offset])
+            rows = await connection.fetch(
+                f"""
+                SELECT {NEED_COLUMNS}
+                FROM camp_needs
+                WHERE {clause}
+                ORDER BY urgency DESC, updated_at DESC
+                LIMIT ${len(args) - 1} OFFSET ${len(args)}
+                """,
+                *args,
+            )
+
+        items = [
+            CampNeed.model_validate({**dict(r), "id": str(r["id"]), "camp_id": str(r["camp_id"])})
+            for r in rows
+        ]
+        return items, total
