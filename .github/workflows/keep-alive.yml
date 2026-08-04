@@ -1,0 +1,15 @@
+name: Keep Render service awake
+
+on:
+  schedule:
+    # Every 10 minutes, comfortably inside Render free-tier's 15-min idle timeout.
+    # GitHub's cron scheduler is best-effort and can slip under load.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: curl --fail --silent --show-error --max-time 30 https://view-flood.onrender.com/api/v1/health
