@@ -107,6 +107,24 @@ The original Lovable prototype was removed once everything was ported. It remain
 | Web | Vercel — `https://www.forwardkerala.com` |
 | Database + storage | Supabase `gkyeujohbbduozggnnvk` |
 
+### Two `vercel.json` files, on purpose
+
+Vercel reads `vercel.json` **only from the project's Root Directory**, and that setting lives in the
+dashboard where the repo cannot see it. So both cases are covered:
+
+| Root Directory | File read | `outputDirectory` |
+|---|---|---|
+| repo root (blank) | `vercel.json` | `web/dist` |
+| `web` | `web/vercel.json` | `dist` |
+
+Either resolves to the same build output. **Keep the `rewrites` and `headers` blocks in the two files in
+sync** — JSON has no comment syntax and Vercel rejects a `//` property, so this table is the only place
+that relationship is recorded.
+
+A symptom of getting this wrong: *"No Output Directory named `dist` found after the Build completed."*
+That means Vercel used its default rather than either config — check Root Directory first. If it still
+says `apps` or `apps/web`, it predates the restructure and should be blank or `web`.
+
 ### ⚠️ Set `CORS_ORIGINS` to include every domain
 
 **A custom domain and its www/apex variants are separate origins to the browser.** Verified on the live

@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "//": "Used when the Vercel project's Root Directory is set to `web`. The repo-root vercel.json covers the case where Root Directory is the repository root. Keep the rewrites and headers in both files in sync.",
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
