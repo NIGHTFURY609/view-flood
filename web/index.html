@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kerala Camp Check — community-verified relief camp information</title>
+    <meta
+      name="description"
+      content="Find open relief camps in Kerala with contacts, directions and what each camp needs. Every fact carries its source, reporter and timestamp. Not an official government source."
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kerala Camp Check" />
+    <meta
+      property="og:description"
+      content="Community-verified relief camp information for Kerala. Every fact carries its source, reporter and timestamp."
+    />
+    <meta name="twitter:card" content="summary" />
+
+    <!--
+      Theme must be resolved BEFORE first paint. Resolving it in a React effect
+      (as the prototype did) shows a flash of the light theme to dark-mode users.
+      Kept inline and blocking on purpose — it is a few hundred bytes.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("kcc.theme");
+          var dark =
+            stored === "dark" ||
+            (stored === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (_) {
+          /* private mode / storage disabled — fall through to the light default */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

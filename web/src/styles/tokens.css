@@ -1,0 +1,247 @@
+/*
+ * Kerala Camp Check — design tokens.
+ *
+ * Direction: field utility. High contrast, dense information, nothing decorative
+ * that competes with a phone number.
+ *
+ * Two rules govern this file:
+ *
+ * 1. SIGNAL COLOUR IS RESERVED. verified / unverified / critical / high / open /
+ *    closed are the product's trust vocabulary, not decoration. Nothing else may
+ *    use those hues. In particular the interactive/brand colour is BLUE, not
+ *    orange — in the prototype --accent (oklch 0.66 0.19 45) and --high
+ *    (oklch 0.6 0.17 55) were near-identical, so a "use my location" button read
+ *    as a high-urgency badge.
+ *
+ * 2. EVERY DOCUMENTED PAIR IS MEASURED. scripts/check-contrast.mjs parses the
+ *    CONTRACT block below and fails the build if any pair drops under target.
+ *    Do not add a colour pairing without adding it there.
+ *
+ * CONTRACT
+ *   foreground/background        4.5
+ *   foreground/surface           4.5
+ *   muted-foreground/background  4.5
+ *   muted-foreground/surface     4.5
+ *   primary/background           4.5
+ *   accent/background            4.5
+ *   accent/surface               4.5
+ *   accent-foreground/accent     4.5
+ *   destructive-foreground/destructive 4.5
+ *   verified/verified-soft       4.5
+ *   unverified/unverified-soft   4.5
+ *   critical/critical-soft       4.5
+ *   high/high-soft               4.5
+ *   open/open-soft               4.5
+ *   closed/closed-soft           4.5
+ *   verified-foreground/verified 4.5
+ *   critical-foreground/critical 4.5
+ *   input/surface                3.0
+ *   border/surface               1.8
+ *   ring/background              3.0
+ * END CONTRACT
+ *
+ * On the two border targets: WCAG 1.4.11 requires 3:1 only for boundaries that
+ * are needed to IDENTIFY a control, so --input carries that burden. --border is
+ * a decorative panel/divider edge; holding it to 3:1 would make every card look
+ * caged. It is held to 1.8:1 instead — quiet, but actually visible, unlike the
+ * prototype's 1.35:1 which rendered as nothing.
+ */
+
+@theme inline {
+  --font-sans: "Inter Variable", "Noto Sans Malayalam", system-ui, sans-serif;
+  --font-display: "Inter Variable", "Noto Sans Malayalam", system-ui, sans-serif;
+
+  /* Type scale — 12px is a hard floor. No arbitrary text-[11px] anywhere. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Semantic signals — reserved, see rule 1 above. */
+  --color-verified: var(--verified);
+  --color-verified-foreground: var(--verified-foreground);
+  --color-verified-soft: var(--verified-soft);
+  --color-unverified: var(--unverified);
+  --color-unverified-foreground: var(--unverified-foreground);
+  --color-unverified-soft: var(--unverified-soft);
+  --color-critical: var(--critical);
+  --color-critical-foreground: var(--critical-foreground);
+  --color-critical-soft: var(--critical-soft);
+  --color-high: var(--high);
+  --color-high-foreground: var(--high-foreground);
+  --color-high-soft: var(--high-soft);
+  --color-open: var(--open);
+  --color-open-foreground: var(--open-foreground);
+  --color-open-soft: var(--open-soft);
+  --color-closed: var(--closed);
+  --color-closed-foreground: var(--closed-foreground);
+  --color-closed-soft: var(--closed-soft);
+
+  --shadow-panel: var(--panel-shadow);
+  --shadow-overlay: var(--overlay-shadow);
+
+  /* Z-index scale. Replaces ad hoc z-20 / z-30 scattered across route files. */
+  --z-sticky: 20;
+  --z-header: 30;
+  --z-dropdown: 40;
+  --z-overlay: 50;
+  --z-dialog: 51;
+  --z-toast: 60;
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Header height is measured at runtime by RootLayout and written here, so
+     sticky elements never hardcode magic offsets like top-[5.4rem]. */
+  --header-h: 3.5rem;
+
+  --background: oklch(0.985 0.004 240);
+  --foreground: oklch(0.15 0.02 260);
+  --surface: oklch(1 0 0);
+  --surface-foreground: oklch(0.15 0.02 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 260);
+
+  --primary: oklch(0.22 0.045 260);
+  --primary-foreground: oklch(0.985 0.004 240);
+  --secondary: oklch(0.955 0.006 250);
+  --secondary-foreground: oklch(0.24 0.035 260);
+  --muted: oklch(0.955 0.006 250);
+  --muted-foreground: oklch(0.46 0.02 258);
+
+  /* Interactive / brand. Blue, not orange — see rule 1. 4.9:1 on white. */
+  --accent: oklch(0.5 0.12 235);
+  --accent-foreground: oklch(0.99 0.003 240);
+  --accent-soft: oklch(0.945 0.03 235);
+
+  --destructive: oklch(0.5 0.2 27);
+  --destructive-foreground: oklch(0.99 0.003 240);
+
+  --border: oklch(0.8 0.008 250);
+  --input: oklch(0.66 0.008 250);
+  --ring: oklch(0.5 0.12 235);
+
+  --verified: oklch(0.42 0.1 175);
+  --verified-foreground: oklch(0.99 0.003 240);
+  --verified-soft: oklch(0.945 0.035 175);
+
+  --unverified: oklch(0.46 0.115 65);
+  --unverified-foreground: oklch(0.99 0.003 240);
+  --unverified-soft: oklch(0.95 0.045 80);
+
+  --critical: oklch(0.5 0.2 27);
+  --critical-foreground: oklch(0.99 0.003 240);
+  --critical-soft: oklch(0.945 0.04 27);
+
+  --high: oklch(0.52 0.14 55);
+  --high-foreground: oklch(0.99 0.003 240);
+  --high-soft: oklch(0.95 0.04 60);
+
+  --open: oklch(0.45 0.12 155);
+  --open-foreground: oklch(0.99 0.003 240);
+  --open-soft: oklch(0.945 0.04 155);
+
+  --closed: oklch(0.45 0.012 258);
+  --closed-foreground: oklch(0.99 0.003 240);
+  --closed-soft: oklch(0.95 0.005 250);
+
+  --panel-shadow:
+    0 1px 2px oklch(0.15 0.02 260 / 0.06), 0 8px 24px oklch(0.15 0.02 260 / 0.05);
+  --overlay-shadow: 0 10px 40px oklch(0.15 0.02 260 / 0.22);
+}
+
+.dark {
+  --background: oklch(0.16 0.018 260);
+  --foreground: oklch(0.96 0.005 250);
+  --surface: oklch(0.21 0.02 260);
+  --surface-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.21 0.02 260);
+  --popover-foreground: oklch(0.96 0.005 250);
+
+  --primary: oklch(0.95 0.006 250);
+  --primary-foreground: oklch(0.18 0.02 260);
+  --secondary: oklch(0.27 0.022 260);
+  --secondary-foreground: oklch(0.95 0.006 250);
+  --muted: oklch(0.27 0.022 260);
+  --muted-foreground: oklch(0.74 0.018 255);
+
+  --accent: oklch(0.72 0.13 235);
+  --accent-foreground: oklch(0.16 0.02 260);
+  --accent-soft: oklch(0.31 0.06 235);
+
+  --destructive: oklch(0.68 0.19 27);
+  --destructive-foreground: oklch(0.16 0.02 260);
+
+  --border: oklch(0.4 0.02 258);
+  --input: oklch(0.52 0.02 258);
+  --ring: oklch(0.72 0.13 235);
+
+  --verified: oklch(0.76 0.11 175);
+  --verified-foreground: oklch(0.16 0.02 260);
+  --verified-soft: oklch(0.3 0.05 175);
+
+  --unverified: oklch(0.81 0.13 78);
+  --unverified-foreground: oklch(0.16 0.02 260);
+  --unverified-soft: oklch(0.31 0.05 78);
+
+  --critical: oklch(0.72 0.18 27);
+  --critical-foreground: oklch(0.16 0.02 260);
+  --critical-soft: oklch(0.3 0.07 27);
+
+  --high: oklch(0.78 0.14 60);
+  --high-foreground: oklch(0.16 0.02 260);
+  --high-soft: oklch(0.31 0.06 60);
+
+  --open: oklch(0.75 0.13 155);
+  --open-foreground: oklch(0.16 0.02 260);
+  --open-soft: oklch(0.3 0.05 155);
+
+  --closed: oklch(0.72 0.012 258);
+  --closed-foreground: oklch(0.16 0.02 260);
+  --closed-soft: oklch(0.29 0.008 258);
+
+  --panel-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 30px oklch(0 0 0 / 0.35);
+  --overlay-shadow: 0 10px 40px oklch(0 0 0 / 0.55);
+}

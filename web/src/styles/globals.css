@@ -1,0 +1,109 @@
+@import "tailwindcss" source(none);
+@source "../";
+
+@import "tw-animate-css";
+
+/* Self-hosted, bundled and fingerprinted by Vite. Replaces the prototype's
+   render-blocking Google Fonts <link> + two preconnects — a real cost on the
+   mobile networks this app exists for. */
+@import "@fontsource-variable/inter";
+@import "@fontsource/noto-sans-malayalam/400.css";
+@import "@fontsource/noto-sans-malayalam/500.css";
+@import "@fontsource/noto-sans-malayalam/700.css";
+
+@import "./tokens.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.018em;
+  }
+
+  /* 3px, up from the prototype's 2px. The civic/accessible direction wants a
+     focus ring you cannot miss on a phone in daylight. */
+  :focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Native form controls should follow the theme rather than render light
+     scrollbars and date pickers inside a dark page. */
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+}
+
+/* The single card/surface primitive. */
+@utility panel {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-panel);
+}
+
+/* WCAG 2.5.5 minimum target. Applied to every interactive element. */
+@utility tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Sticky bars sit exactly below the measured header, never a magic constant. */
+@utility below-header {
+  position: sticky;
+  top: var(--header-h);
+  z-index: var(--z-sticky);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Leaflet renders its own panes; keep them under the app's sticky chrome. */
+.leaflet-container {
+  font: inherit;
+  background: var(--color-muted);
+  z-index: 0;
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: var(--color-surface);
+  color: var(--color-muted-foreground);
+  font-size: var(--text-xs);
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline — Kerala Camp Check</title>
+    <!--
+      Deliberately zero JavaScript, zero external requests, everything inline.
+      This page exists for the worst case: no data, no cached app shell, someone
+      who needs a phone number right now. Every number below is a plain tel:
+      link that works with the radio alone.
+    -->
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 2rem 1.25rem;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: #f8fafd;
+        color: #070b14;
+        line-height: 1.5;
+      }
+      main { max-width: 30rem; margin: 0 auto; }
+      h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+      p { margin: 0 0 1.25rem; color: #515963; }
+      ul { list-style: none; margin: 0 0 1.5rem; padding: 0; display: grid; gap: 0.5rem; }
+      a.call {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 56px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #cbd0d4;
+        border-radius: 0.75rem;
+        background: #fff;
+        color: #070b14;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      a.call strong { color: #bb0916; font-size: 1.125rem; }
+      button {
+        min-height: 44px;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #cbd0d4;
+        border-radius: 0.75rem;
+        background: #fff;
+        color: #070b14;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #090d15; color: #eff2f5; }
+        p { color: #a3acb6; }
+        a.call, button { background: #131922; border-color: #414853; color: #eff2f5; }
+        a.call strong { color: #ff7064; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>You are offline</h1>
+      <p lang="ml">നിങ്ങൾ ഓഫ്‌ലൈനാണ്</p>
+      <p>
+        Camp information needs a connection. These emergency numbers work without
+        mobile data.
+      </p>
+
+      <ul>
+        <li>
+          <a class="call" href="tel:1077"
+            ><span>District Emergency Operations</span><strong>1077</strong></a
+          >
+        </li>
+        <li>
+          <a class="call" href="tel:1070"
+            ><span>State Emergency Operations</span><strong>1070</strong></a
+          >
+        </li>
+        <li>
+          <a class="call" href="tel:112"><span>Emergency response</span><strong>112</strong></a>
+        </li>
+        <li>
+          <a class="call" href="tel:108"><span>Ambulance</span><strong>108</strong></a>
+        </li>
+        <li>
+          <a class="call" href="tel:101"><span>Fire and Rescue</span><strong>101</strong></a>
+        </li>
+      </ul>
+
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>

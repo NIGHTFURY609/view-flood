@@ -1,0 +1,20 @@
+{
+  // The service worker runs in a WebWorker global, not the DOM, so it needs its
+  // own lib set. vite-plugin-pwa compiles it separately from the app bundle.
+  //
+  // exactOptionalPropertyTypes is relaxed here ONLY because Workbox's own
+  // plugin interfaces declare optional callbacks without `| undefined`, which
+  // is a library typing choice we cannot change. The app tsconfig keeps it on.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "WebWorker"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "strict": true,
+    "exactOptionalPropertyTypes": false,
+    "types": ["vite-plugin-pwa/client"]
+  },
+  "include": ["src/sw.ts"]
+}
