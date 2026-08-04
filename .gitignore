@@ -1,0 +1,22 @@
+node_modules/
+dist/
+dist-ssr/
+.vercel/
+*.local
+
+# Secrets. api/.env holds the service-role key and the database URLs.
+.env
+.env.local
+.env.*.local
+# These carry nothing secret and are meant to be committed.
+!.env.example
+!.env.production
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+.DS_Store
+*.log

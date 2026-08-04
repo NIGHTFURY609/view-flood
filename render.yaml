@@ -1,0 +1,58 @@
+# Render blueprint for the Kerala Camp Check API.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> point at this repo.
+# Secrets marked `sync: false` are NOT stored here; set them in the Render
+# dashboard under the service's Environment tab.
+
+services:
+  - type: web
+    name: view-flood
+    runtime: python
+    plan: free
+    region: singapore # closest Render region to Kerala
+    rootDir: api
+
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    # --proxy-headers + --forwarded-allow-ips are REQUIRED: without them every
+    # request appears to come from Render's load balancer, which would collapse
+    # the per-IP OTP rate limit and the one-check-in-per-network-per-day rule
+    # onto a single bucket for all users.
+    startCommand: >
+      uv run uvicorn app.main:app
+      --host 0.0.0.0
+      --port $PORT
+      --proxy-headers
+      --forwarded-allow-ips='*'
+
+    healthCheckPath: /api/v1/health
+
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.12"
+
+      # Allowed browser origins, comma separated, NO trailing slash.
+      # Must list every domain the site is served from — a custom domain and
+      # its www/apex variants are separate origins to the browser, and a
+      # missing one fails every API call with an opaque CORS error.
+      #   https://forwardkerala.com,https://www.forwardkerala.com,https://view-flood.vercel.app
+      - key: CORS_ORIGINS
+        sync: false
+
+      - key: SUPABASE_URL
+        value: https://gkyeujohbbduozggnnvk.supabase.co
+      - key: SUPABASE_STORAGE_BUCKET
+        value: camp-images
+
+      # --- secrets: set these in the Render dashboard ---------------------
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Transaction pooler (port 6543) for the runtime pool.
+      - key: SUPABASE_DB_URL
+        sync: false
+      # Long random string. Changing it invalidates in-flight OTP codes.
+      - key: OTP_PEPPER
+        generateValue: true
