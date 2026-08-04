@@ -1,5 +1,6 @@
 import {
   ArrowUp,
+  ClipboardList,
   LifeBuoy,
   Moon,
   MapPinned,
@@ -15,6 +16,7 @@ import { NavLink, Outlet, Link } from "react-router";
 import { InfoTip } from "@/shared/components/InfoTip";
 import { Button } from "@/shared/components/ui/button";
 import { useOnline } from "@/shared/hooks/useGeolocation";
+import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
 import { useTheme } from "@/shared/lib/theme";
@@ -109,6 +111,48 @@ function EmergencyButton({ className }: { className?: string }) {
   );
 }
 
+const SURVEY_URL = "https://forms.gle/tNRqJGTFSTFSkMGMA";
+
+function SurveyButton() {
+  const { t } = useI18n();
+  const [expanded, setExpanded] = useState(false);
+  const isSmUp = useMediaQuery("(min-width: 640px)");
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isSmUp && !expanded) {
+      e.preventDefault();
+      setExpanded(true);
+    }
+  };
+
+  return (
+    <a
+      href={SURVEY_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleClick}
+      aria-label="Report current camp status — volunteer survey"
+      className={cn(
+        "fixed bottom-20 right-4 z-(--z-header) lg:bottom-6",
+        "flex items-center justify-center gap-2 rounded-full shadow-overlay",
+        "bg-accent text-accent-foreground text-sm font-semibold",
+        "transition-all duration-300 hover:bg-accent/90",
+        expanded || isSmUp ? "px-4 py-2.5" : "size-11",
+      )}
+    >
+      <ClipboardList className="size-4 shrink-0" aria-hidden="true" />
+      <span
+        className={cn(
+          "overflow-hidden whitespace-nowrap transition-all duration-300",
+          expanded || isSmUp ? "max-w-48 opacity-100" : "max-w-0 opacity-0",
+        )}
+      >
+        {t("survey.button")}
+      </span>
+    </a>
+  );
+}
+
 function BackToTop() {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
@@ -128,7 +172,7 @@ function BackToTop() {
       size="icon"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label={t("action.backToTop")}
-      className="fixed bottom-20 right-4 z-(--z-header) rounded-full shadow-overlay lg:bottom-6"
+      className="fixed bottom-32 right-4 z-(--z-header) rounded-full shadow-overlay lg:bottom-[4.5rem]"
     >
       <ArrowUp className="size-5" aria-hidden="true" />
     </Button>
@@ -286,6 +330,7 @@ export function RootLayout() {
         ))}
       </nav>
 
+      <SurveyButton />
       <BackToTop />
     </div>
   );

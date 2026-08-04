@@ -66,15 +66,19 @@ class Database:
         # pooler (port 6543): pgbouncer does not keep prepared statements across
         # pooled connections, and asyncpg's cache silently breaks if it assumes
         # they persist.
-        self._pool = await asyncpg.create_pool(
-            self._dsn,
-            min_size=1,
-            max_size=10,
-            statement_cache_size=0,
-            command_timeout=20,
-            init=_register_codecs,
-        )
-        log.info("db_pool_started")
+        try:
+            self._pool = await asyncpg.create_pool(
+                self._dsn,
+                min_size=1,
+                max_size=10,
+                statement_cache_size=0,
+                command_timeout=20,
+                init=_register_codecs,
+            )
+            log.info("db_pool_started")
+        except Exception as exc:
+            log.warning("db_pool_failed", error=str(exc), detail="Falling back to PostgREST for reads. Writes will return 503.")
+            self._dsn = None
 
     async def close(self) -> None:
         if self._pool is not None:
