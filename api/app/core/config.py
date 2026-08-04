@@ -40,6 +40,12 @@ class Settings(BaseSettings):
 
     storage_bucket: str = Field(default="camp-images", alias="SUPABASE_STORAGE_BUCKET")
 
+    # --- JWT ----------------------------------------------------------------
+    jwt_secret_key: str = Field(default="dev-change-me-before-production", alias="JWT_SECRET_KEY")
+    jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
+    access_token_expire_minutes: int = Field(default=15, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
+    refresh_token_expire_days: int = Field(default=7, alias="REFRESH_TOKEN_EXPIRE_DAYS")
+
     # --- security -----------------------------------------------------------
     # Without this the OTP hash is sha256(phone:code) — offline-brute-forceable
     # over a 1M code space if otp_challenges ever leaks.

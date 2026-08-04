@@ -13,7 +13,16 @@ from app.core.errors import register_exception_handlers
 from app.core.security import AdminAuth
 from app.db.session import Database
 from app.db.supabase_rest import SupabaseRest
-from app.routers import admin, camps, geography, weather, writes
+from app.routers import (
+    admin,
+    admin_camps,
+    admin_logs,
+    auth,
+    camps,
+    geography,
+    weather,
+    writes,
+)
 from app.services.admin_service import AdminService
 from app.services.checkin_service import CheckInService
 from app.services.image_service import ImageService
@@ -104,15 +113,23 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
-        # Bearer tokens only, no cookies — no need to widen the credentialed surface.
-        allow_credentials=False,
-        allow_methods=["GET", "POST", "PATCH"],
+        allow_credentials=True,  # required for httpOnly cookie auth
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
     )
 
     register_exception_handlers(app)
 
-    for router in (geography.router, camps.router, weather.router, writes.router, admin.router):
+    for router in (
+        geography.router,
+        camps.router,
+        weather.router,
+        writes.router,
+        admin.router,
+        admin_camps.router,
+        admin_logs.router,
+        auth.router,
+    ):
         app.include_router(router, prefix="/api/v1")
 
     @app.get("/api/v1/health", tags=["meta"])

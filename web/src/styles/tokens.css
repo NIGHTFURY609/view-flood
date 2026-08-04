@@ -50,6 +50,9 @@
 @theme inline {
   --font-sans: "Inter Variable", "Noto Sans Malayalam", system-ui, sans-serif;
   --font-display: "Inter Variable", "Noto Sans Malayalam", system-ui, sans-serif;
+  /* Admin panel is English-only, so it drops the Malayalam fallback and is pure
+     Inter. Applied via the `font-inter` utility on the admin root. */
+  --font-inter: "Inter Variable", system-ui, sans-serif;
 
   /* Type scale — 12px is a hard floor. No arbitrary text-[11px] anywhere. */
   --text-xs: 0.75rem;
@@ -117,12 +120,14 @@
   --shadow-panel: var(--panel-shadow);
   --shadow-overlay: var(--overlay-shadow);
 
-  /* Z-index scale. Replaces ad hoc z-20 / z-30 scattered across route files. */
+  /* Z-index scale. Replaces ad hoc z-20 / z-30 scattered across route files.
+     Dropdowns/tooltips sit ABOVE overlays and dialogs: a select or tooltip
+     opened from inside a modal must render in front of it, not behind. */
   --z-sticky: 20;
   --z-header: 30;
-  --z-dropdown: 40;
   --z-overlay: 50;
   --z-dialog: 51;
+  --z-dropdown: 55;
   --z-toast: 60;
 
   --duration-fast: 120ms;
