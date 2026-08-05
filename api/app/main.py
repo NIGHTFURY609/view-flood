@@ -115,7 +115,7 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origin_list,
         allow_credentials=True,  # required for httpOnly cookie auth
         allow_methods=["GET", "POST", "PATCH", "DELETE"],
-        allow_headers=["Authorization", "Content-Type"],
+        allow_headers=["Authorization", "Content-Type", "ngrok-skip-browser-warning"],
     )
 
     register_exception_handlers(app)

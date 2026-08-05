@@ -109,6 +109,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const { method = "GET", query, body, signal, token } = options;
 
   const headers: Record<string, string> = { Accept: "application/json" };
+  // ngrok shows an HTML interstitial to browser requests. Skipping it keeps
+  // JSON responses (and CORS headers) flowing when the API is served through
+  // a tunnel; harmless against any other origin.
+  headers["ngrok-skip-browser-warning"] = "true";
   if (body !== undefined && !(body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
