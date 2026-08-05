@@ -8,7 +8,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from app.deps import CampsServiceDep, CurrentAdminDep
-from app.routers.admin_camps import _offset, _require_sql
+from app.routers.admin.camps import _offset, _require_sql
 from app.schemas.common import Page
 
 router = APIRouter(tags=["admin-logs"], prefix="/admin")

@@ -13,16 +13,10 @@ from app.core.errors import register_exception_handlers
 from app.core.security import AdminAuth
 from app.db.session import Database
 from app.db.supabase_rest import SupabaseRest
-from app.routers import (
-    admin,
-    admin_camps,
-    admin_logs,
-    auth,
-    camps,
-    geography,
-    weather,
-    writes,
-)
+from app.routers import auth, camps, geography, weather, writes
+from app.routers.admin import camps as admin_camps
+from app.routers.admin import legacy as admin_legacy
+from app.routers.admin import logs as admin_logs
 from app.services.admin_service import AdminService
 from app.services.checkin_service import CheckInService
 from app.services.image_service import ImageService
@@ -125,7 +119,7 @@ def create_app() -> FastAPI:
         camps.router,
         weather.router,
         writes.router,
-        admin.router,
+        admin_legacy.router,
         admin_camps.router,
         admin_logs.router,
         auth.router,
