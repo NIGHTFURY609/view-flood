@@ -2,15 +2,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import Cookies from "js-cookie";
 
 import { adminClient } from "@/features/admin/api/adminClient";
+import type { AdminProfile } from "@/features/admin/types";
 
 const LOGGED_IN_COOKIE = "logged_in";
-
-export interface AdminProfile {
-  id: string;
-  email: string;
-  display_name: string | null;
-  role: string;
-}
 
 interface AuthContextValue {
   user: AdminProfile | null;

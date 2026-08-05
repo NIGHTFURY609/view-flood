@@ -21,15 +21,10 @@ import {
   approveAdminCamp,
   denyAdminCamp,
   rejectAdminCamp,
-  type AdminCampsParams,
-  type Verification,
 } from "@/features/admin/api/adminCamps";
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog";
-import {
-  CampsFilterDialog,
-  EMPTY_FILTERS,
-  type CampFilters,
-} from "@/features/admin/components/CampsFilterDialog";
+import { CampsFilterDialog, EMPTY_FILTERS } from "@/features/admin/components/CampsFilterDialog";
+import type { AdminCampsParams, CampFilters, Verification } from "@/features/admin/types";
 import { districtsQuery } from "@/features/camps/api";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";

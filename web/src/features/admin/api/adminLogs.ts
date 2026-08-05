@@ -1,25 +1,8 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import { adminClient } from "@/features/admin/api/adminClient";
+import type { AdminLogsParams, AuditLogEntry } from "@/features/admin/types";
 import type { Page } from "@/shared/types/api";
-
-export interface AuditLogEntry {
-  id: string;
-  created_at: string;
-  actor_type: string;
-  actor_id: string | null;
-  entity_type: string;
-  entity_id: string | null;
-  action: string;
-  note: string | null;
-}
-
-export interface AdminLogsParams {
-  entity_type?: string;
-  action?: string;
-  cursor?: string;
-  limit?: number;
-}
 
 export function adminLogsQuery(params: AdminLogsParams) {
   return queryOptions({

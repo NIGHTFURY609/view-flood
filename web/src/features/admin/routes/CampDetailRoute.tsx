@@ -21,7 +21,6 @@ import {
   denyAdminCamp,
   rejectAdminCamp,
   updateAdminCamp,
-  type CampUpdatePayload,
 } from "@/features/admin/api/adminCamps";
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog";
 import { districtsQuery, lsgQuery, taluksQuery } from "@/features/camps/api";
@@ -43,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import type { AdminReport, CampUpdatePayload } from "@/features/admin/types";
 import { cn } from "@/shared/lib/cn";
 import type { CampDetail, VerificationState } from "@/shared/types/api";
 
@@ -455,7 +455,7 @@ function ReportsCard({
   reports,
   loading,
 }: {
-  reports: import("@/features/admin/api/adminCamps").AdminReport[];
+  reports: AdminReport[];
   loading: boolean;
 }) {
   if (!loading && reports.length === 0) return null;

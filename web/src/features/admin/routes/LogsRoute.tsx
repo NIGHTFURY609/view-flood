@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { adminLogsQuery, type AuditLogEntry } from "@/features/admin/api/adminLogs";
+import { adminLogsQuery } from "@/features/admin/api/adminLogs";
+import type { AuditLogEntry } from "@/features/admin/types";
 import { cn } from "@/shared/lib/cn";
 
 const PAGE_SIZE = 25;

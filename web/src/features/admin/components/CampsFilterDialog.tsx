@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import type { Verification } from "@/features/admin/api/adminCamps";
+import type { CampFilters, Verification } from "@/features/admin/types";
 import { districtsQuery, lsgQuery, taluksQuery } from "@/features/camps/api";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -20,13 +20,6 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/cn";
-
-export interface CampFilters {
-  verification: Verification;
-  district_code: string;
-  taluk: string;
-  lsg_name: string;
-}
 
 export const EMPTY_FILTERS: CampFilters = {
   verification: "all",
