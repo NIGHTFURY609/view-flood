@@ -34,7 +34,7 @@ const PAGE_SIZE = 24;
 export function CampsListRoute() {
   const { t } = useI18n();
   const { values, setValues, reset } = useFilterParams(campListFilterSchema);
-  const { coords, status: geoStatus, request: requestLocation } = useGeolocation();
+  const { coords, status: geoStatus, request: requestLocation, clear } = useGeolocation();
 
   useEffect(() => {
     document.title = `${t("list.title")} — ${t("app.name")}`;
@@ -92,7 +92,13 @@ export function CampsListRoute() {
   const handleFilterChange = (patch: Partial<CampListFilters>) => setValues(patch);
 
   const filters = (
-    <CampFilters values={values} onChange={handleFilterChange} onReset={reset} />
+    <CampFilters
+      values={values}
+      onChange={handleFilterChange}
+      onReset={reset}
+      locationActive={coords !== null}
+      onClearLocation={clear}
+    />
   );
 
   return (

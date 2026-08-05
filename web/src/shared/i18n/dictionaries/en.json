@@ -126,6 +126,8 @@
   "filter.lsg": "Local body",
   "filter.lsgName": "Local body name",
   "filter.lsgType": "Local body type",
+  "filter.myLocation": "My location",
+  "filter.removeLocation": "Remove location",
   "filter.reset": "Reset filters",
   "filter.search": "Search camp, place or landmark",
   "filter.status": "Status",
