@@ -26,7 +26,7 @@ export function StepStatus({
         <legend className="mb-1.5 text-sm font-medium text-foreground">
           {t("report.isOpen")}
         </legend>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Choice
             active={draft.reportedStatus === "active"}
             onClick={() => update({ reportedStatus: "active" })}

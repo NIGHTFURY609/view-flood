@@ -37,7 +37,7 @@ export function RootErrorBoundary() {
         </Link>
         <a
           href="tel:1077"
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-critical px-5 text-sm font-bold text-critical-foreground"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-danger-call px-5 text-sm font-bold text-danger-call-foreground"
         >
           <Phone className="size-4" aria-hidden="true" />
           Call 1077

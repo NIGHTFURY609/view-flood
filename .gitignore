@@ -11,6 +11,8 @@ dist-ssr/
 # These carry nothing secret and are meant to be committed.
 !.env.example
 !.env.production
+# Zipped copy of api/.env (real secrets) — never commit it.
+env.zip
 
 .venv/
 __pycache__/
@@ -20,3 +22,10 @@ __pycache__/
 
 .DS_Store
 *.log
+
+# Local agent/test helper scripts and docs (not part of the app).
+AGENTS.md
+*_probe.py
+*_diag.py
+*_check.py
+probe*.py

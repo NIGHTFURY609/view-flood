@@ -78,10 +78,20 @@ function parseContract(css) {
     });
 }
 
+function hexToSrgb(hex) {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  return [
+    parseInt(full.slice(0, 2), 16) / 255,
+    parseInt(full.slice(2, 4), 16) / 255,
+    parseInt(full.slice(4, 6), 16) / 255,
+  ];
+}
+
 /**
- * Extract `--name: oklch(L C H);` declarations from a selector block.
- * Tokens using alpha or non-oklch values are skipped — the contract only
- * references opaque colours.
+ * Extract `--name: <color>` declarations from a selector block. Accepts oklch(...)
+ * or #hex (the token palette is authored in hex to match the design spec exactly).
+ * Alpha / non-colour tokens are skipped — the contract only references opaque colours.
  */
 function parseTokens(css, selector) {
   const start = css.indexOf(selector + " {");
@@ -90,10 +100,18 @@ function parseTokens(css, selector) {
   const body = css.slice(start, end);
 
   const tokens = new Map();
-  const re = /--([a-z0-9-]+):\s*oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/gi;
+  const re =
+    /--([a-z0-9-]+):\s*(oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})/gi;
   let m;
   while ((m = re.exec(body)) !== null) {
-    tokens.set(m[1], oklchToSrgb(Number(m[2]), Number(m[3]), Number(m[4])));
+    const name = m[1];
+    let rgb;
+    if (m[2].startsWith("oklch")) {
+      rgb = oklchToSrgb(Number(m[3]), Number(m[4]), Number(m[5]));
+    } else {
+      rgb = hexToSrgb(m[2]);
+    }
+    tokens.set(name, rgb);
   }
   return tokens;
 }

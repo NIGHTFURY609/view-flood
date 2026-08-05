@@ -20,7 +20,7 @@ export function Pagination({
   if (pageCount <= 1) return null;
 
   return (
-    <nav aria-label={t("page.label")} className="flex items-center justify-between gap-3 pt-2">
+    <nav aria-label={t("page.label")} className="flex flex-wrap items-center justify-between gap-3 pt-2">
       <Button
         variant="outline"
         size="sm"

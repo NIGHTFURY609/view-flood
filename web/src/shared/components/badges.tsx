@@ -2,8 +2,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   CircleAlert,
-  DoorClosed,
-  DoorOpen,
   Landmark,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -57,17 +55,30 @@ export function VerificationBadge({
   );
 }
 
+/**
+ * A status dot: filled = open/active, hollow ring = closed. Carries the meaning
+ * via SHAPE as well as colour, so the open/closed distinction survives for
+ * colour-blind users (WCAG 1.4.1).
+ */
+function StatusDot({ open }: { open: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "size-2.5 rounded-full",
+        open ? "bg-current" : "border-2 border-current bg-transparent",
+      )}
+    />
+  );
+}
+
 export function StatusBadge({ status }: { status: CampStatus }) {
   const { t } = useI18n();
   const open = status === "active";
 
   return (
     <Pill className={open ? "bg-open-soft text-open" : "bg-closed-soft text-closed"}>
-      {open ? (
-        <DoorOpen className="size-3.5" aria-hidden="true" />
-      ) : (
-        <DoorClosed className="size-3.5" aria-hidden="true" />
-      )}
+      <StatusDot open={open} />
       {open ? t("status.active") : t("status.inactive")}
     </Pill>
   );

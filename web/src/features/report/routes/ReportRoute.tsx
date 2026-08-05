@@ -207,7 +207,7 @@ export function ReportRoute() {
         <p className="max-w-md text-sm text-muted-foreground text-pretty">
           {t("report.doneBody")}
         </p>
-        <p className="rounded-lg bg-secondary px-4 py-2 font-mono text-lg font-bold text-foreground">
+        <p className="max-w-full break-all rounded-lg bg-secondary px-4 py-2 font-mono text-lg font-bold text-foreground">
           {reference}
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -296,7 +296,7 @@ export function ReportRoute() {
         ) : null}
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Button
           variant="outline"
           size="md"

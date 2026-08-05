@@ -26,15 +26,15 @@ export function SegmentedNav({
 }) {
   return (
     <nav aria-label={ariaLabel}>
-      <ul className="inline-flex items-center gap-1 rounded-lg border border-border bg-secondary p-1">
+      <ul className="inline-flex max-w-full items-center gap-1 rounded-lg border border-border bg-secondary p-1">
         {segments.map((segment) => (
-          <li key={segment.to}>
+          <li key={segment.to} className="min-w-0">
             <NavLink
               to={segment.to}
               end={segment.end ?? false}
               className={({ isActive }) =>
                 cn(
-                  "inline-flex min-h-11 items-center justify-center rounded-md px-3",
+                  "inline-flex min-h-11 max-w-full items-center justify-center truncate rounded-md px-3",
                   "text-sm font-semibold transition-colors duration-(--duration-fast)",
                   isActive
                     ? "bg-surface text-foreground shadow-panel"
