@@ -111,8 +111,22 @@ def clear_auth_cookies(response: Response) -> None:
     response.delete_cookie("logged_in", path="/")
 
 
+def access_token_from_request(request: Request) -> str | None:
+    """The access JWT, from either auth path.
+
+    Bearer header wins (the localStorage flow), otherwise the httpOnly access
+    cookie. Both flows are accepted at once so switching the frontend between
+    them needs no backend change — flip the client and it keeps working.
+    """
+    header = request.headers.get("authorization", "")
+    scheme, _, token = header.partition(" ")
+    if scheme.lower() == "bearer" and token:
+        return token
+    return request.cookies.get("access_token")
+
+
 async def require_admin_cookie(request: Request) -> AdminUser:
-    """FastAPI dependency for admin routes — reads JWT from httpOnly cookie."""
+    """FastAPI dependency for admin routes — accepts a Bearer header or cookie JWT."""
     settings: Settings = request.app.state.settings
     database = request.app.state.db
 
@@ -122,7 +136,7 @@ async def require_admin_cookie(request: Request) -> AdminUser:
             code="db_not_configured",
         )
 
-    token = request.cookies.get("access_token")
+    token = access_token_from_request(request)
     if not token:
         raise UnauthorizedError("Sign in to continue", code="missing_token")
 

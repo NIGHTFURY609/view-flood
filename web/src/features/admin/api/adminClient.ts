@@ -1,14 +1,18 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 
+import { AUTH_MODE, tokenStore } from "@/features/admin/auth/tokenStore";
+
 const BASE_URL =
   (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "/api/v1";
 
 /**
- * Admin transport. Auth rides entirely in httpOnly cookies (access + refresh),
- * so nothing here reads or writes a token — `withCredentials` sends them for us.
- * The one non-httpOnly cookie, `logged_in`, is only ever read by the app to
- * decide whether a session is worth probing; it is never a credential.
+ * Admin transport. Two interchangeable auth paths (see AUTH_MODE):
+ * - "cookie": httpOnly access/refresh cookies, sent automatically via
+ *   `withCredentials`. Nothing is read or written in JS.
+ * - "bearer": the access token from localStorage rides in the Authorization
+ *   header. `withCredentials` stays on so the same client works either way.
+ * The backend accepts both, so switching modes is a client-only change.
  */
 export const adminClient = axios.create({
   baseURL: BASE_URL,
@@ -16,7 +20,16 @@ export const adminClient = axios.create({
   withCredentials: true,
 });
 
-// The access cookie is short-lived. When it expires, exactly one request should
+// Attach the Bearer token in bearer mode. A no-op in cookie mode.
+adminClient.interceptors.request.use((config) => {
+  if (AUTH_MODE === "bearer") {
+    const token = tokenStore.getAccess();
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// The access token is short-lived. When it expires, exactly one request should
 // hit /auth/refresh; every other in-flight 401 waits in this queue and retries
 // once the refresh resolves, rather than each firing its own refresh.
 let isRefreshing = false;
@@ -25,6 +38,17 @@ let waiters: Array<() => void> = [];
 function flushWaiters() {
   waiters.forEach((resume) => resume());
   waiters = [];
+}
+
+async function runRefresh(): Promise<void> {
+  if (AUTH_MODE === "bearer") {
+    const res = await adminClient.post<{ access_token?: string }>("/auth/refresh", {
+      refresh_token: tokenStore.getRefresh(),
+    });
+    if (res.data?.access_token) tokenStore.setAccess(res.data.access_token);
+  } else {
+    await adminClient.post("/auth/refresh");
+  }
 }
 
 adminClient.interceptors.response.use(
@@ -52,11 +76,12 @@ adminClient.interceptors.response.use(
 
     isRefreshing = true;
     try {
-      await adminClient.post("/auth/refresh");
+      await runRefresh();
       flushWaiters();
       return adminClient(original);
     } catch (refreshError) {
       waiters = [];
+      tokenStore.clear();
       Cookies.remove("logged_in");
       if (window.location.pathname !== "/admin/login") {
         window.location.href = "/admin/login";

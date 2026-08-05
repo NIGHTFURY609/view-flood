@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from app.core.config import get_settings
 from app.core.auth_utils import (
+    access_token_from_request,
     clear_auth_cookies,
     create_access_token,
     create_refresh_token,
@@ -24,6 +25,12 @@ class LoginIn(BaseModel):
     password: str
 
 
+class RefreshIn(BaseModel):
+    # Optional: the Bearer/localStorage flow sends the refresh token here; the
+    # cookie flow sends nothing and we read the httpOnly refresh cookie instead.
+    refresh_token: str | None = None
+
+
 class MeOut(BaseModel):
     id: str
     email: str
@@ -32,7 +39,7 @@ class MeOut(BaseModel):
 
 
 @router.post("/login")
-async def login(body: LoginIn, response: Response, db: DatabaseDep) -> dict[str, bool]:
+async def login(body: LoginIn, response: Response, db: DatabaseDep) -> dict[str, object]:
     row = await db.fetchrow(
         "SELECT id, email, display_name, role, hashed_password FROM users WHERE lower(email) = lower($1)",
         body.email,
@@ -47,19 +54,20 @@ async def login(body: LoginIn, response: Response, db: DatabaseDep) -> dict[str,
 
     settings = get_settings()
     user_id = str(row["id"])
-    set_auth_cookies(
-        response,
-        create_access_token(user_id, settings),
-        create_refresh_token(user_id, settings),
-        settings,
-    )
-    return {"ok": True}
+    access = create_access_token(user_id, settings)
+    refresh = create_refresh_token(user_id, settings)
+    # Set httpOnly cookies AND return the tokens in the body, so either the cookie
+    # flow or the Bearer/localStorage flow can be used from the same login call.
+    set_auth_cookies(response, access, refresh, settings)
+    return {"ok": True, "access_token": access, "refresh_token": refresh, "token_type": "bearer"}
 
 
 @router.post("/refresh")
-async def refresh(request: Request, response: Response) -> dict[str, bool]:
+async def refresh(
+    request: Request, response: Response, body: RefreshIn | None = None
+) -> dict[str, object]:
     settings = get_settings()
-    token = request.cookies.get("refresh_token")
+    token = (body.refresh_token if body else None) or request.cookies.get("refresh_token")
     if not token:
         raise UnauthorizedError("No refresh token", code="missing_token")
 
@@ -80,7 +88,7 @@ async def refresh(request: Request, response: Response) -> dict[str, bool]:
         max_age=settings.access_token_expire_minutes * 60,
         path="/api/v1",
     )
-    return {"ok": True}
+    return {"ok": True, "access_token": new_access}
 
 
 @router.post("/logout")
@@ -92,7 +100,7 @@ async def logout(response: Response) -> dict[str, bool]:
 @router.get("/me", response_model=MeOut)
 async def me(request: Request, db: DatabaseDep) -> MeOut:
     settings = get_settings()
-    token = request.cookies.get("access_token")
+    token = access_token_from_request(request)
     if not token:
         raise UnauthorizedError("Sign in to continue", code="missing_token")
 
