@@ -1,81 +1,91 @@
 /*
- * Kerala Camp Check — design tokens.
+ * Kerala Camp Check — design tokens ("Signal" redesign).
  *
- * Direction: field utility. High contrast, dense information, nothing decorative
- * that competes with a phone number.
+ * Direction: emergency/civic information system. High contrast, information-first,
+ * one warm-orange accent reserved for primary actions, the status vocabulary
+ * carried by shape + icon + text (never colour alone).
  *
- * Two rules govern this file:
- *
- * 1. SIGNAL COLOUR IS RESERVED. verified / unverified / critical / high / open /
- *    closed are the product's trust vocabulary, not decoration. Nothing else may
- *    use those hues. In particular the interactive/brand colour is BLUE, not
- *    orange — in the prototype --accent (oklch 0.66 0.19 45) and --high
- *    (oklch 0.6 0.17 55) were near-identical, so a "use my location" button read
- *    as a high-urgency badge.
- *
+ * Two rules:
+ * 1. SIGNAL COLOUR IS RESERVED. open / closed / verified / unverified / critical /
+ *    needed are the trust vocabulary. The accent (signal-orange) is used ONLY for
+ *    primary CTAs, the active filter/nav state, and the language-pill active segment.
+ *    The danger-call red is reserved for 1077 / emergency call only.
  * 2. EVERY DOCUMENTED PAIR IS MEASURED. scripts/check-contrast.mjs parses the
- *    CONTRACT block below and fails the build if any pair drops under target.
- *    Do not add a colour pairing without adding it there.
+ *    CONTRACT block and fails the build if any pair drops under target.
  *
  * CONTRACT
- *   foreground/background        4.5
- *   foreground/surface           4.5
- *   muted-foreground/background  4.5
- *   muted-foreground/surface     4.5
- *   primary/background           4.5
- *   accent/background            4.5
- *   accent/surface               4.5
- *   accent-foreground/accent     4.5
- *   destructive-foreground/destructive 4.5
- *   verified/verified-soft       4.5
- *   unverified/unverified-soft   4.5
- *   critical/critical-soft       4.5
- *   high/high-soft               4.5
- *   open/open-soft               4.5
- *   closed/closed-soft           4.5
- *   verified-foreground/verified 4.5
- *   critical-foreground/critical 4.5
- *   input/surface                3.0
- *   border/surface               1.8
- *   ring/background              3.0
+ *   foreground/background               4.5
+ *   foreground/surface                  4.5
+ *   text-secondary/background           4.5
+ *   text-secondary/surface              4.5
+ *   text-tertiary/background            4.5
+ *   text-tertiary/surface               4.5
+ *   accent/background                   4.5
+ *   accent/surface                      4.5
+ *   accent-foreground/accent            4.5
+ *   accent-soft/accent                  4.5
+ *   danger-call/background              4.5
+ *   danger-call/surface                 4.5
+ *   danger-call-foreground/danger-call  4.5
+ *   open/surface                        4.5
+ *   closed/surface                      4.5
+ *   verified/surface                    4.5
+ *   unverified/surface                  4.5
+ *   critical/surface                    4.5
+ *   high/surface                        4.5
+ *   open-soft/open                       4.5
+ *   closed-soft/closed                  4.5
+ *   verified-soft/verified              4.5
+ *   unverified-soft/unverified          4.5
+ *   critical-soft/critical              4.5
+ *   high-soft/high                       4.5
+ *   input/surface                       3.0
+ *   border/surface                      1.5
+ *   ring/background                     3.0
  * END CONTRACT
- *
- * On the two border targets: WCAG 1.4.11 requires 3:1 only for boundaries that
- * are needed to IDENTIFY a control, so --input carries that burden. --border is
- * a decorative panel/divider edge; holding it to 3:1 would make every card look
- * caged. It is held to 1.8:1 instead — quiet, but actually visible, unlike the
- * prototype's 1.35:1 which rendered as nothing.
  */
 
 @theme inline {
-  --font-sans: "Inter Variable", "Noto Sans Malayalam", system-ui, sans-serif;
-  --font-display: "Inter Variable", "Noto Sans Malayalam", system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Noto Sans Malayalam", system-ui, -apple-system, sans-serif;
+  --font-display: "Inter Variable", "Noto Sans Malayalam", system-ui, -apple-system, sans-serif;
 
-  /* Type scale — 12px is a hard floor. No arbitrary text-[11px] anywhere. */
+  /* Type scale — 13px floor. clamp() for fluid display sizes. */
   --text-xs: 0.75rem;
   --text-xs--line-height: 1rem;
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.25rem;
   --text-base: 1rem;
-  --text-base--line-height: 1.5rem;
+  --text-base--line-height: 1.55rem;
   --text-lg: 1.125rem;
   --text-lg--line-height: 1.75rem;
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.75rem;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 2rem;
-  --text-3xl: 1.875rem;
-  --text-3xl--line-height: 2.25rem;
+  --text-display: clamp(1.75rem, 5vw, 2.5rem);
+  --text-display--line-height: 1.1;
+  --text-h2: clamp(1.25rem, 3.5vw, 1.5rem);
+  --text-h2--line-height: 1.2;
+  --text-h3: 1.0625rem;
+  --text-h3--line-height: 1.3;
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.4;
+  --text-mono-num: 0.9375rem;
+  --text-mono-num--line-height: 1.2;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
 
+  /* Colour tokens mapped to Tailwind utilities (bg-/text-/border-/ring-). */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-surface-foreground: var(--surface-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
@@ -85,16 +95,27 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-tertiary: var(--text-tertiary);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-contrast: var(--accent-contrast);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-danger-call: var(--danger-call);
+  --color-danger-call-foreground: var(--danger-call-foreground);
   --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Semantic signals — reserved, see rule 1 above. */
+  --color-open: var(--open);
+  --color-open-foreground: var(--open-foreground);
+  --color-open-soft: var(--open-soft);
+  --color-closed: var(--closed);
+  --color-closed-foreground: var(--closed-foreground);
+  --color-closed-soft: var(--closed-soft);
   --color-verified: var(--verified);
   --color-verified-foreground: var(--verified-foreground);
   --color-verified-soft: var(--verified-soft);
@@ -107,17 +128,10 @@
   --color-high: var(--high);
   --color-high-foreground: var(--high-foreground);
   --color-high-soft: var(--high-soft);
-  --color-open: var(--open);
-  --color-open-foreground: var(--open-foreground);
-  --color-open-soft: var(--open-soft);
-  --color-closed: var(--closed);
-  --color-closed-foreground: var(--closed-foreground);
-  --color-closed-soft: var(--closed-soft);
 
   --shadow-panel: var(--panel-shadow);
   --shadow-overlay: var(--overlay-shadow);
 
-  /* Z-index scale. Replaces ad hoc z-20 / z-30 scattered across route files. */
   --z-sticky: 20;
   --z-header: 30;
   --z-dropdown: 40;
@@ -125,123 +139,139 @@
   --z-dialog: 51;
   --z-toast: 60;
 
-  --duration-fast: 120ms;
-  --duration-base: 200ms;
-  --duration-slow: 320ms;
+  --duration-instant: 100ms;
+  --duration-fast: 180ms;
+  --duration-base: 280ms;
+  --duration-slow: 420ms;
+
+  /* Motion tokens (CSS side; anime.js uses its own JS durations). */
+  --motion-instant: 100ms;
+  --motion-fast: 180ms;
+  --motion-base: 280ms;
+  --motion-slow: 420ms;
+
+  --ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
-  --radius: 0.75rem;
+  /* Light theme */
+  --background: #fafaf8;
+  --foreground: #17170f;
+  --surface: #ffffff;
+  --surface-2: #f3f3f0;
+  --surface-3: #e9e9e4;
+  --surface-foreground: #17170f;
+  --popover: #ffffff;
+  --popover-foreground: #17170f;
 
-  /* Header height is measured at runtime by RootLayout and written here, so
-     sticky elements never hardcode magic offsets like top-[5.4rem]. */
-  --header-h: 3.5rem;
+  --primary: #17170f;
+  --primary-foreground: #fafaf8;
+  --secondary: #f3f3f0;
+  --secondary-foreground: #4b4b43;
+  --muted: #f3f3f0;
+  --muted-foreground: #4b4b43;
 
-  --background: oklch(0.985 0.004 240);
-  --foreground: oklch(0.15 0.02 260);
-  --surface: oklch(1 0 0);
-  --surface-foreground: oklch(0.15 0.02 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 260);
+  --text-secondary: #4b4b43;
+  --text-tertiary: #6b6b61;
 
-  --primary: oklch(0.22 0.045 260);
-  --primary-foreground: oklch(0.985 0.004 240);
-  --secondary: oklch(0.955 0.006 250);
-  --secondary-foreground: oklch(0.24 0.035 260);
-  --muted: oklch(0.955 0.006 250);
-  --muted-foreground: oklch(0.46 0.02 258);
+  --accent: #c2410c;
+  --accent-foreground: #ffffff;
+  --accent-soft: #fcedE6;
+  --accent-contrast: #ffffff;
 
-  /* Interactive / brand. Blue, not orange — see rule 1. 4.9:1 on white. */
-  --accent: oklch(0.5 0.12 235);
-  --accent-foreground: oklch(0.99 0.003 240);
-  --accent-soft: oklch(0.945 0.03 235);
+  --destructive: #c01717;
+  --destructive-foreground: #ffffff;
+  --danger-call: #c01717;
+  --danger-call-foreground: #ffffff;
 
-  --destructive: oklch(0.5 0.2 27);
-  --destructive-foreground: oklch(0.99 0.003 240);
+  --border: #b0b0a4;
+  --border-subtle: #b0b0a4;
+  --border-strong: #cbcbc3;
+  --input: #8a8a7e;
+  --ring: #c2410c;
 
-  --border: oklch(0.8 0.008 250);
-  --input: oklch(0.66 0.008 250);
-  --ring: oklch(0.5 0.12 235);
-
-  --verified: oklch(0.42 0.1 175);
-  --verified-foreground: oklch(0.99 0.003 240);
-  --verified-soft: oklch(0.945 0.035 175);
-
-  --unverified: oklch(0.46 0.115 65);
-  --unverified-foreground: oklch(0.99 0.003 240);
-  --unverified-soft: oklch(0.95 0.045 80);
-
-  --critical: oklch(0.5 0.2 27);
-  --critical-foreground: oklch(0.99 0.003 240);
-  --critical-soft: oklch(0.945 0.04 27);
-
-  --high: oklch(0.52 0.14 55);
-  --high-foreground: oklch(0.99 0.003 240);
-  --high-soft: oklch(0.95 0.04 60);
-
-  --open: oklch(0.45 0.12 155);
-  --open-foreground: oklch(0.99 0.003 240);
-  --open-soft: oklch(0.945 0.04 155);
-
-  --closed: oklch(0.45 0.012 258);
-  --closed-foreground: oklch(0.99 0.003 240);
-  --closed-soft: oklch(0.95 0.005 250);
+  --open: #0b7a4d;
+  --open-foreground: #0b7a4d;
+  --open-soft: #eaf8ef;
+  --closed: #4b5563;
+  --closed-foreground: #4b5563;
+  --closed-soft: #eceef1;
+  --verified: #0369a1;
+  --verified-foreground: #0369a1;
+  --verified-soft: #e0f0fa;
+  --unverified: #92600a;
+  --unverified-foreground: #92600a;
+  --unverified-soft: #fbf0db;
+  --critical: #c01717;
+  --critical-foreground: #c01717;
+  --critical-soft: #fbe7e7;
+  --high: #92600a;
+  --high-foreground: #92600a;
+  --high-soft: #fbf0db;
 
   --panel-shadow:
-    0 1px 2px oklch(0.15 0.02 260 / 0.06), 0 8px 24px oklch(0.15 0.02 260 / 0.05);
-  --overlay-shadow: 0 10px 40px oklch(0.15 0.02 260 / 0.22);
+    0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --overlay-shadow: 0 10px 40px rgba(0, 0, 0, 0.22);
 }
 
 .dark {
-  --background: oklch(0.16 0.018 260);
-  --foreground: oklch(0.96 0.005 250);
-  --surface: oklch(0.21 0.02 260);
-  --surface-foreground: oklch(0.96 0.005 250);
-  --popover: oklch(0.21 0.02 260);
-  --popover-foreground: oklch(0.96 0.005 250);
+  /* Dark theme — elevated greys, never pure #000 (halation). */
+  --background: #121212;
+  --foreground: #f2f2f0;
+  --surface: #1a1a1a;
+  --surface-2: #212121;
+  --surface-3: #292929;
+  --surface-foreground: #f2f2f0;
+  --popover: #1a1a1a;
+  --popover-foreground: #f2f2f0;
 
-  --primary: oklch(0.95 0.006 250);
-  --primary-foreground: oklch(0.18 0.02 260);
-  --secondary: oklch(0.27 0.022 260);
-  --secondary-foreground: oklch(0.95 0.006 250);
-  --muted: oklch(0.27 0.022 260);
-  --muted-foreground: oklch(0.74 0.018 255);
+  --primary: #f2f2f0;
+  --primary-foreground: #121212;
+  --secondary: #212121;
+  --secondary-foreground: #b7b7b4;
+  --muted: #212121;
+  --muted-foreground: #b7b7b4;
 
-  --accent: oklch(0.72 0.13 235);
-  --accent-foreground: oklch(0.16 0.02 260);
-  --accent-soft: oklch(0.31 0.06 235);
+  --text-secondary: #b7b7b4;
+  --text-tertiary: #86867f;
 
-  --destructive: oklch(0.68 0.19 27);
-  --destructive-foreground: oklch(0.16 0.02 260);
+  --accent: #ff6a3d;
+  --accent-foreground: #1a0d06;
+  --accent-soft: #2a1a12;
+  --accent-contrast: #1a0d06;
 
-  --border: oklch(0.4 0.02 258);
-  --input: oklch(0.52 0.02 258);
-  --ring: oklch(0.72 0.13 235);
+  --destructive: #ef4444;
+  --destructive-foreground: #1a0d06;
+  --danger-call: #ef4444;
+  --danger-call-foreground: #1a0d06;
 
-  --verified: oklch(0.76 0.11 175);
-  --verified-foreground: oklch(0.16 0.02 260);
-  --verified-soft: oklch(0.3 0.05 175);
+  --border: #4a4a43;
+  --border-subtle: #4a4a43;
+  --border-strong: #3d3d3d;
+  --input: #727265;
+  --ring: #ff6a3d;
 
-  --unverified: oklch(0.81 0.13 78);
-  --unverified-foreground: oklch(0.16 0.02 260);
-  --unverified-soft: oklch(0.31 0.05 78);
+  --open: #34d399;
+  --open-foreground: #34d399;
+  --open-soft: #0e2a1e;
+  --closed: #9ca3af;
+  --closed-foreground: #9ca3af;
+  --closed-soft: #20232a;
+  --verified: #38bdf8;
+  --verified-foreground: #38bdf8;
+  --verified-soft: #0a2a3a;
+  --unverified: #fbbf24;
+  --unverified-foreground: #fbbf24;
+  --unverified-soft: #2e2410;
+  --critical: #ef4444;
+  --critical-foreground: #ef4444;
+  --critical-soft: #1a0606;
+  --high: #fbbf24;
+  --high-foreground: #fbbf24;
+  --high-soft: #2e2410;
 
-  --critical: oklch(0.72 0.18 27);
-  --critical-foreground: oklch(0.16 0.02 260);
-  --critical-soft: oklch(0.3 0.07 27);
-
-  --high: oklch(0.78 0.14 60);
-  --high-foreground: oklch(0.16 0.02 260);
-  --high-soft: oklch(0.31 0.06 60);
-
-  --open: oklch(0.75 0.13 155);
-  --open-foreground: oklch(0.16 0.02 260);
-  --open-soft: oklch(0.3 0.05 155);
-
-  --closed: oklch(0.72 0.012 258);
-  --closed-foreground: oklch(0.16 0.02 260);
-  --closed-soft: oklch(0.29 0.008 258);
-
-  --panel-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 30px oklch(0 0 0 / 0.35);
-  --overlay-shadow: 0 10px 40px oklch(0 0 0 / 0.55);
+  /* Dark elevation = surface lightness steps, not shadows. */
+  --panel-shadow: none;
+  --overlay-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
 }
