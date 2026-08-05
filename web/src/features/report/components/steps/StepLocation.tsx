@@ -53,6 +53,7 @@ export function StepLocation({
           type="button"
           variant="outline"
           size="md"
+          className="whitespace-normal"
           onClick={() => {
             request();
             if (coords) {

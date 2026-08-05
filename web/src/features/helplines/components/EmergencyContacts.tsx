@@ -60,7 +60,7 @@ function ContactGroup({
       <h2 className="mb-2 text-sm font-bold text-foreground">{title}</h2>
       <ul className="grid gap-2 sm:grid-cols-2">
         {contacts.map((contact) => (
-          <li key={contact.id}>
+          <li key={contact.id} className="min-w-0">
             <a
               href={`tel:${contact.phone}`}
               className={cn(

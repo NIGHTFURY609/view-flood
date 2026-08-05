@@ -107,7 +107,7 @@ export function CampsListRoute() {
           </span>
         ) : null}
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -199,7 +199,7 @@ export function CampsListRoute() {
               size="md"
               onClick={requestLocation}
               disabled={geoStatus === "asking"}
-              className="self-start"
+              className="self-start whitespace-normal"
             >
               <MapPin className="size-4 text-accent" aria-hidden="true" />
               {geoStatus === "asking" ? t("location.searching") : t("action.useLocation")}

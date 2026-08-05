@@ -7,9 +7,9 @@
  * freely and stay accessible by construction.
  *
  * Where anime.js runs (and nowhere else): card-list entrance, wizard step
- * transitions, status-badge change, the language-pill slide, the theme-toggle
- * icon morph, and dropdown open/close. Parallax, auto-looping decor, and any
- * animation in front of the emergency call are forbidden.
+ * transitions, status-badge change, the theme-toggle icon morph, and dropdown
+ * open/close. Parallax, auto-looping decor, and any animation in front of the
+ * emergency call are forbidden.
  */
 import { animate, createTimeline, stagger, utils } from "animejs";
 
@@ -60,15 +60,6 @@ export function wizardTransition(
 export function pulseBadge(el: HTMLElement | null): void {
   if (!el || prefersReduced()) return;
   animate(el, { scale: [1, 1.12, 1], duration: 200, ease: "outQuad" });
-}
-
-/** Slide the active segment of the language pill between EN and ML. */
-export function slideLanguagePill(el: HTMLElement, toX: number): void {
-  if (prefersReduced()) {
-    utils.set(el, { translateX: toX });
-    return;
-  }
-  animate(el, { translateX: toX, duration: 180, ease: "outQuad" });
 }
 
 /** Crossfade two icon nodes (sun <-> moon). */

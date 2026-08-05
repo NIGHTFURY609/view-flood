@@ -17,7 +17,6 @@ import { Button } from "@/shared/components/ui/button";
 import { LanguagePill } from "@/shared/components/LanguagePill";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useOnline } from "@/shared/hooks/useGeolocation";
-import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
 
@@ -79,40 +78,21 @@ const SURVEY_URL = "https://forms.gle/tNRqJGTFSTFSkMGMA";
 
 function SurveyButton() {
   const { t } = useI18n();
-  const [expanded, setExpanded] = useState(false);
-  const isSmUp = useMediaQuery("(min-width: 640px)");
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isSmUp && !expanded) {
-      e.preventDefault();
-      setExpanded(true);
-    }
-  };
-
   return (
     <a
       href={SURVEY_URL}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={handleClick}
-      aria-label="Report current camp status — volunteer survey"
+      aria-label={t("survey.button")}
       className={cn(
         "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-(--z-header) lg:bottom-6",
-        "flex items-center justify-center gap-2 rounded-full shadow-overlay",
+        "flex items-center justify-center gap-2 rounded-full px-4 py-2.5 shadow-overlay",
         "bg-accent text-accent-foreground text-sm font-semibold",
-        "transition-all duration-300 hover:bg-accent/90",
-        expanded || isSmUp ? "px-4 py-2.5" : "size-11",
+        "transition-colors duration-(--duration-fast) hover:bg-accent/90",
       )}
     >
       <ClipboardList className="size-4 shrink-0" aria-hidden="true" />
-      <span
-        className={cn(
-          "overflow-hidden whitespace-nowrap transition-all duration-300",
-          expanded || isSmUp ? "max-w-48 opacity-100" : "max-w-0 opacity-0",
-        )}
-      >
-        {t("survey.button")}
-      </span>
+      <span className="whitespace-nowrap">{t("survey.button")}</span>
     </a>
   );
 }
@@ -254,7 +234,7 @@ export function RootLayout() {
             </ul>
           </nav>
           <div className="ml-auto flex items-center gap-2 lg:ml-2">
-            <LanguagePill className="hidden sm:inline-grid" />
+            <LanguagePill />
             <ThemeToggle />
             <EmergencyButton />
           </div>
@@ -323,7 +303,7 @@ export function RootLayout() {
             }
           >
             <item.icon className="size-5" aria-hidden="true" />
-            <span className="truncate">{t(item.labelKey)}</span>
+            <span className="text-center leading-tight">{t(item.labelKey)}</span>
           </NavLink>
         ))}
       </nav>

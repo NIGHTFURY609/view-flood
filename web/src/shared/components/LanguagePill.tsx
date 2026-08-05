@@ -1,68 +1,39 @@
-import { useLayoutEffect, useRef } from "react";
+import { Languages } from "lucide-react";
 
 import { useI18n, type Locale } from "@/shared/i18n";
-import { slideLanguagePill } from "@/shared/lib/motion";
 import { cn } from "@/shared/lib/cn";
 
-const SEGMENTS: readonly { locale: Locale; label: string }[] = [
-  { locale: "en", label: "EN" },
-  { locale: "ml", label: "മല" },
-];
+const LANGUAGE_NAMES: Record<Locale, string> = {
+  en: "English",
+  ml: "മലയാളം",
+};
 
 /**
- * Persistent header language toggle. The active segment's filled accent
- * background slides between EN and ML (anime.js) rather than hard-swapping, so
- * the control reads as a toggle. Always visible — never collapsed into a menu.
+ * Single-button language switch. Shows the name of the language you can switch
+ * TO (Malayalam UI shows "English", English UI shows "മലയാളം"), so the action
+ * is obvious at a glance. Compact enough to stay in the header at every width —
+ * the language name is always visible; the globe icon appears from sm up.
  */
 export function LanguagePill({ className }: { className?: string }) {
-  const { locale, setLocale } = useI18n();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const indicatorRef = useRef<HTMLSpanElement>(null);
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    const indicator = indicatorRef.current;
-    if (!container || !indicator) return;
-    const activeIndex = SEGMENTS.findIndex((s) => s.locale === locale);
-    const step = container.offsetWidth / SEGMENTS.length;
-    slideLanguagePill(indicator, activeIndex * step);
-  }, [locale]);
+  const { locale, toggle, t } = useI18n();
+  const target: Locale = locale === "ml" ? "en" : "ml";
+  const label = t("a11y.switchLanguage", { language: LANGUAGE_NAMES[target] });
 
   return (
-    <div
-      ref={containerRef}
-      role="group"
-      aria-label="Language"
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={label}
+      title={label}
       className={cn(
-        "relative inline-grid grid-cols-2 rounded-pill border border-border-strong bg-surface-2 p-0.5 text-xs font-semibold",
+        "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-pill",
+        "border border-border-strong bg-surface-2 px-3 text-xs font-semibold text-foreground",
+        "transition-colors duration-(--duration-fast) hover:bg-secondary",
         className,
       )}
     >
-      <span
-        ref={indicatorRef}
-        aria-hidden="true"
-        className="absolute inset-y-0.5 left-0.5 w-[calc(50%-0.25rem)] rounded-pill bg-accent"
-      />
-      {SEGMENTS.map((s) => {
-        const active = s.locale === locale;
-        return (
-          <button
-            key={s.locale}
-            type="button"
-            onClick={() => setLocale(s.locale)}
-            aria-pressed={active}
-            className={cn(
-              "relative z-10 min-h-9 rounded-pill px-3 py-1.5 transition-colors duration-(--duration-fast)",
-              "before:absolute before:-inset-1 before:rounded-pill before:content-['']",
-              active
-                ? "text-accent-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {s.label}
-          </button>
-        );
-      })}
-    </div>
+      <Languages className="hidden size-4 shrink-0 text-accent sm:block" aria-hidden="true" />
+      <span className="whitespace-nowrap">{LANGUAGE_NAMES[target]}</span>
+    </button>
   );
 }
