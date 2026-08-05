@@ -10,6 +10,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
+from app.core.auth_utils import AdminUser, require_admin_cookie
 from app.core.security import AdminAuth
 from app.db.session import Database
 from app.db.supabase_rest import SupabaseRest
@@ -91,3 +92,4 @@ CheckInServiceDep = Annotated[CheckInService, Depends(get_checkin_service)]
 NeedsServiceDep = Annotated[NeedsService, Depends(get_needs_service)]
 AdminServiceDep = Annotated[AdminService, Depends(get_admin_service)]
 AdminAuthDep = Annotated[AdminAuth, Depends(get_admin_auth)]
+CurrentAdminDep = Annotated[AdminUser, Depends(require_admin_cookie)]

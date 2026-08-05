@@ -1,4 +1,4 @@
-"""Admin authentication.
+"""Admin authentication (Supabase-backed).
 
 Two separate questions, deliberately kept apart:
 
