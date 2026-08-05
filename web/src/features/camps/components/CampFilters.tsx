@@ -123,8 +123,9 @@ export function CampFilters({
           <button
             type="button"
             onClick={onClearLocation}
+            disabled={!onClearLocation}
             aria-label={t("filter.removeLocation")}
-            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-(--duration-fast) hover:bg-secondary hover:text-foreground"
+            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-(--duration-fast) hover:bg-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
