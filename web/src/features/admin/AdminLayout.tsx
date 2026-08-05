@@ -26,10 +26,6 @@ export function AdminLayout() {
 
   return (
     <AuthProvider>
-      {/* admin-theme: Kashti palette, scoped here so nothing outside admin is
-          touched. `dark` supplies the dark baseline; font-inter forces Inter.
-          h-dvh + overflow-hidden: the shell never scrolls — only inner regions
-          (e.g. a table body) do. */}
       <div className="admin-theme dark font-inter h-dvh overflow-hidden bg-background text-foreground">
         <Outlet />
       </div>

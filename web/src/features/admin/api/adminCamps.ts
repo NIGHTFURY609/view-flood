@@ -41,7 +41,6 @@ export interface AdminReport {
   submitted_at: string;
 }
 
-/** Admin camps listing — richer search/filter than the public endpoint. */
 export function adminCampsQuery(params: AdminCampsParams) {
   return queryOptions({
     queryKey: ["admin", "camps", params],
@@ -89,7 +88,6 @@ export function adminCampReportsQuery(id: string) {
   });
 }
 
-/** Fields the admin edit form may write. Mirrors the backend whitelist. */
 export interface CampUpdatePayload {
   name?: string;
   name_ml?: string | null;
@@ -109,19 +107,16 @@ export async function updateAdminCamp(id: string, payload: CampUpdatePayload): P
   return res.data;
 }
 
-/** Approve a reported camp — becomes verified and shows in the public app. */
 export async function approveAdminCamp(id: string): Promise<CampDetail> {
   const res = await adminClient.post<CampDetail>(`/admin/camps/${id}/approve`);
   return res.data;
 }
 
-/** Reject a reported camp — stays unverified, marked reviewed (leaves the queue). */
 export async function rejectAdminCamp(id: string, note?: string): Promise<CampDetail> {
   const res = await adminClient.post<CampDetail>(`/admin/camps/${id}/reject`, { note });
   return res.data;
 }
 
-/** Deny a reported camp — hard delete. */
 export async function denyAdminCamp(id: string): Promise<void> {
   await adminClient.delete(`/admin/camps/${id}`);
 }

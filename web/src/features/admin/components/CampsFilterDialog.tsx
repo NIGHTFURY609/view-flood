@@ -83,7 +83,6 @@ export function CampsFilterDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
-          {/* Verification */}
           {!hideVerification && (
             <div className="flex flex-col gap-2">
               <Label>Verification</Label>
@@ -107,7 +106,6 @@ export function CampsFilterDialog({
             </div>
           )}
 
-          {/* District */}
           <div className="flex flex-col gap-2">
             <Label>District</Label>
             <Select
@@ -135,7 +133,6 @@ export function CampsFilterDialog({
             </Select>
           </div>
 
-          {/* Taluk */}
           <div className="flex flex-col gap-2">
             <Label>Taluk</Label>
             <Select
@@ -157,7 +154,6 @@ export function CampsFilterDialog({
             </Select>
           </div>
 
-          {/* Local Body */}
           <div className="flex flex-col gap-2">
             <Label>Local Body</Label>
             <Select

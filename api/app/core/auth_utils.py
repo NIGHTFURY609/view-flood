@@ -21,10 +21,6 @@ from app.core.security import AdminUser
 log = structlog.get_logger()
 
 
-# ---------------------------------------------------------------------------
-# Password hashing
-# ---------------------------------------------------------------------------
-
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
@@ -32,10 +28,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
-
-# ---------------------------------------------------------------------------
-# JWT (python-jose, HS256)
-# ---------------------------------------------------------------------------
 
 def create_access_token(subject: str, settings: Settings) -> str:
     expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
@@ -62,10 +54,6 @@ def decode_token(token: str, settings: Settings | None = None) -> dict[str, obje
     except JWTError as exc:
         raise UnauthorizedError("Session expired. Sign in again.", code="invalid_token") from exc
 
-
-# ---------------------------------------------------------------------------
-# httpOnly cookie helpers
-# ---------------------------------------------------------------------------
 
 def set_auth_cookies(
     response: Response,
@@ -114,10 +102,6 @@ def clear_auth_cookies(response: Response) -> None:
     response.delete_cookie("refresh_token", path="/api/v1/auth/refresh")
     response.delete_cookie("logged_in", path="/")
 
-
-# ---------------------------------------------------------------------------
-# Cookie-based admin dependency
-# ---------------------------------------------------------------------------
 
 async def require_admin_cookie(request: Request) -> AdminUser:
     """FastAPI dependency for admin routes — reads JWT from httpOnly cookie."""

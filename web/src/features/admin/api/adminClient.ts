@@ -16,7 +16,6 @@ export const adminClient = axios.create({
   withCredentials: true,
 });
 
-// --- silent refresh on 401 ---------------------------------------------------
 // The access cookie is short-lived. When it expires, exactly one request should
 // hit /auth/refresh; every other in-flight 401 waits in this queue and retries
 // once the refresh resolves, rather than each firing its own refresh.

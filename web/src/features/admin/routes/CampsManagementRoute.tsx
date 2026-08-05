@@ -19,7 +19,6 @@ export function CampsManagementRoute() {
   return (
     <div className="flex h-full flex-col gap-4">
       <div className="shrink-0 space-y-3">
-        {/* Mobile-only toggle */}
         <button
           type="button"
           onClick={() => setStatsOpen((v) => !v)}

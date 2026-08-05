@@ -17,7 +17,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/shared/components/ui/sheet";
 import { cn } from "@/shared/lib/cn";
 
-/** Per-route header content, declared as `handle` on each route object. */
 interface RouteHandle {
   title?: string;
   subtitle?: string;
@@ -33,7 +32,6 @@ function linkClass({ isActive }: { isActive: boolean }): string {
   );
 }
 
-/** Sidebar contents — shared by the desktop rail and the mobile drawer. */
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const [campsOpen, setCampsOpen] = useState(() => location.pathname.startsWith("/admin/camps"));
@@ -114,14 +112,12 @@ export function DashboardLayout() {
 
   return (
     <div className="flex h-full bg-background">
-      {/* Desktop rail */}
       <aside className="hidden w-64 shrink-0 border-r border-border lg:block">
         <SidebarNav />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 sm:px-6">
-          {/* Mobile drawer trigger */}
           <Sheet open={navOpen} onOpenChange={setNavOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation">

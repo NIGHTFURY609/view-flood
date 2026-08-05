@@ -182,7 +182,6 @@ export function CampsTable({ lockedVerification, reviewed, actions = "open" }: C
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {/* Toolbar */}
       <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
         <div className="flex gap-2">
           <Select value={searchField} onValueChange={(v) => setSearchField(v as SearchField)}>
@@ -222,7 +221,6 @@ export function CampsTable({ lockedVerification, reviewed, actions = "open" }: C
         </Button>
       </div>
 
-      {/* Table / list card */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-surface">
         <div
           style={{ gridTemplateColumns: GRID }}

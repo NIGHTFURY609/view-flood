@@ -203,7 +203,6 @@ export function CampDetailRoute() {
           <p className="text-sm text-critical">Could not load this camp.</p>
         ) : (
           <>
-            {/* Header + primary actions */}
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <h2 className="truncate text-lg font-semibold text-foreground">{data.name}</h2>
@@ -260,7 +259,6 @@ export function CampDetailRoute() {
 
                 <ReportsCard reports={reports.data ?? []} loading={reports.isPending} />
 
-                {/* Danger zone */}
                 <div className="rounded-xl border border-[#f85149]/40 bg-[#f85149]/5 p-5">
                   <h3 className="text-sm font-semibold text-[#f85149]">Danger zone</h3>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -280,7 +278,6 @@ export function CampDetailRoute() {
         )}
       </div>
 
-      {/* Save confirmation (double-confirm the edit) */}
       <ConfirmDialog
         open={saveOpen}
         onOpenChange={setSaveOpen}
@@ -327,8 +324,6 @@ export function CampDetailRoute() {
     </div>
   );
 }
-
-// --- view sections -----------------------------------------------------------
 
 function ViewSections({ camp, districtName }: { camp: CampDetail; districtName: string | undefined }) {
   const location = [camp.village_or_locality, camp.lsg_name, camp.taluk, districtName ?? camp.district_code]
@@ -512,8 +507,6 @@ function ReportsCard({
   );
 }
 
-// --- edit form ---------------------------------------------------------------
-
 function EditForm({
   form,
   set,
@@ -668,8 +661,6 @@ function EditForm({
   );
 }
 
-// --- danger delete (type-to-confirm) -----------------------------------------
-
 function DeleteDialog({
   open,
   onOpenChange,
@@ -724,8 +715,6 @@ function DeleteDialog({
     </Dialog>
   );
 }
-
-// --- small helpers -----------------------------------------------------------
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
