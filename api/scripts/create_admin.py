@@ -5,7 +5,7 @@ Run from the api/ directory:
 
 Example:
     python scripts/create_admin.py admin@local.com admin123
-
+    .venv/Scripts/python.exe scripts/create_admin.py admin@12.com admin12#
 Requires SUPABASE_DB_URL in api/.env (or set as env var).
 """
 
