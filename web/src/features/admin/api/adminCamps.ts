@@ -67,7 +67,8 @@ export async function approveAdminCamp(id: string): Promise<CampDetail> {
 }
 
 export async function rejectAdminCamp(id: string, note?: string): Promise<CampDetail> {
-  const res = await adminClient.post<CampDetail>(`/admin/camps/${id}/reject`, { note });
+  // "/decline", not "/reject": the legacy admin router owns /reject (Supabase auth).
+  const res = await adminClient.post<CampDetail>(`/admin/camps/${id}/decline`, { note });
   return res.data;
 }
 

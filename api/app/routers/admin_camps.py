@@ -182,7 +182,10 @@ async def admin_approve_camp(
     return camp
 
 
-@router.post("/camps/{camp_id}/reject", response_model=CampDetail)
+# Path is "/decline", not "/reject": the legacy admin.py router (Supabase bearer
+# auth) already owns POST /admin/camps/{id}/reject and is mounted first, so it
+# would shadow this cookie/JWT-authed handler and 401 our tokens.
+@router.post("/camps/{camp_id}/decline", response_model=CampDetail)
 async def admin_reject_camp(
     camp_id: str, body: RejectIn, admin: CurrentAdminDep, service: CampsServiceDep
 ) -> CampDetail:
