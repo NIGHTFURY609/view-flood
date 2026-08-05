@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Search, X } from "lucide-react";
+import { ChevronDown, MapPin, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { districtsQuery, lsgQuery, taluksQuery } from "@/features/camps/api";
@@ -38,9 +38,18 @@ export interface CampFiltersProps {
   readonly values: CampListFilters;
   readonly onChange: (patch: Partial<CampListFilters>) => void;
   readonly onReset: () => void;
+  /** Active when the user granted "Use my location" — rendered as a removable filter. */
+  readonly locationActive?: boolean;
+  readonly onClearLocation?: () => void;
 }
 
-export function CampFilters({ values, onChange, onReset }: CampFiltersProps) {
+export function CampFilters({
+  values,
+  onChange,
+  onReset,
+  locationActive = false,
+  onClearLocation,
+}: CampFiltersProps) {
   const { t } = useI18n();
 
   // Local text state so typing does not push one history entry per keystroke.
@@ -97,6 +106,23 @@ export function CampFilters({ values, onChange, onReset }: CampFiltersProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      {locationActive ? (
+        <div className="flex min-h-11 items-center justify-between gap-2 rounded-lg border border-accent bg-accent/10 px-3">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+            <MapPin className="size-4 text-accent" aria-hidden="true" />
+            {t("filter.myLocation")}
+          </span>
+          <button
+            type="button"
+            onClick={onClearLocation}
+            aria-label={t("filter.removeLocation")}
+            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-(--duration-fast) hover:bg-secondary hover:text-foreground"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
       <div>
         <Label htmlFor="camp-search" className="mb-1.5 block">
           {t("filter.search")}
