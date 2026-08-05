@@ -1,0 +1,63 @@
+/*
+ * Admin-only theme — Kashti MIS palette.
+ *
+ * Scoped entirely to the `.admin-theme` class (applied on the admin root in
+ * AdminLayout). It overrides the same base design-token variables the rest of
+ * the app uses, so every admin component re-skins with NO markup changes — and
+ * because it is class-scoped, the public app is completely unaffected.
+ *
+ * Used together with the `dark` class on the same element: `dark` supplies the
+ * full dark baseline (soft signal variants, shadows), and this block overrides
+ * the specific hues to match Kashti. Values are Kashti's verbatim hex.
+ */
+
+.admin-theme {
+  color-scheme: dark;
+
+  /* Kashti uses a slightly tighter 10px radius than the public app's 12px. */
+  --radius: 0.625rem;
+
+  --background: #0a0c10;
+  --foreground: #f3f5f8;
+
+  --surface: #12151c;
+  --surface-foreground: #f3f5f8;
+
+  /* Elevated surfaces (popovers, dropdowns) use the secondary panel tone. */
+  --popover: #1a1f29;
+  --popover-foreground: #f3f5f8;
+
+  /* The dialog overlay scrim is bg-primary/50, so primary must be a DARK colour
+     here (near-black) — otherwise the modal backdrop washes the page white. */
+  --primary: #000000;
+  --primary-foreground: #f3f5f8;
+
+  /* Chips, active nav items, hover fills. */
+  --secondary: #1a1f29;
+  --secondary-foreground: #f3f5f8;
+  --muted: #1a1f29;
+  --muted-foreground: #9198a1;
+
+  /* The indigo brand accent — buttons, active states, focus ring. */
+  --accent: #7c8cf8;
+  --accent-foreground: #ffffff;
+  --accent-soft: rgba(124, 140, 248, 0.16);
+
+  --destructive: #f85149;
+  --destructive-foreground: #ffffff;
+
+  --border: #2a2f3a;
+  --input: #2a2f3a;
+  --ring: #7c8cf8;
+
+  /* Signal hues retuned to Kashti's set for the few admin surfaces that use
+     them (states, badges). Soft variants fall through to the `dark` baseline. */
+  --critical: #f85149;
+  --critical-foreground: #ffffff;
+  --verified: #3fb950;
+  --verified-foreground: #0a0c10;
+  --open: #3fb950;
+  --open-foreground: #0a0c10;
+  --high: #d29922;
+  --high-foreground: #0a0c10;
+}
