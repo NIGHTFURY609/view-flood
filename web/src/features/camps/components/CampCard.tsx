@@ -163,7 +163,7 @@ export function CampCard({ camp }: { camp: CampListItem }) {
           <a
             href={`tel:${camp.camp_phone_primary}`}
             className={cn(
-              "flex min-h-11 flex-1 items-center justify-center gap-2 bg-surface px-3",
+              "flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 bg-surface px-3",
               "text-sm font-semibold text-foreground",
               "transition-colors duration-(--duration-fast) hover:bg-secondary",
             )}
@@ -172,7 +172,7 @@ export function CampCard({ camp }: { camp: CampListItem }) {
             {displayPhone(camp.camp_phone_primary)}
           </a>
         ) : (
-          <span className="flex min-h-11 flex-1 items-center justify-center bg-surface px-3 text-xs text-muted-foreground">
+          <span className="flex min-h-11 min-w-0 flex-1 items-center justify-center bg-surface px-3 text-xs text-muted-foreground">
             {t("detail.noPhone")}
           </span>
         )}

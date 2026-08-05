@@ -72,14 +72,14 @@ export function slideLanguagePill(el: HTMLElement, toX: number): void {
 }
 
 /** Crossfade two icon nodes (sun <-> moon). */
-export function morphThemeIcon(from: HTMLElement, to: HTMLElement): void {
+export function morphThemeIcon(from: Element, to: Element): void {
   if (prefersReduced()) {
     utils.set(from, { opacity: 0 });
     utils.set(to, { opacity: 1 });
     return;
   }
-  animate(from, { opacity: [1, 0], duration: 180, ease: "outQuad" });
-  animate(to, { opacity: [0, 1], duration: 180, ease: "outQuad" });
+  animate(from, { opacity: [1, 0], duration: 140, ease: "outQuad" });
+  animate(to, { opacity: [0, 1], duration: 140, ease: "outQuad" });
 }
 
 /** Gentle one-shot scale-in (empty states). Never loops. */

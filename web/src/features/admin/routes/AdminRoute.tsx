@@ -238,13 +238,13 @@ function QueuePanel({ token }: { token: string }) {
                 {[item.district_code, item.taluk, item.lsg_name].filter(Boolean).join(" › ")}
               </p>
             </div>
-            <span className="rounded-full bg-secondary px-2 py-0.5 font-mono text-xs font-bold text-secondary-foreground">
+            <span className="max-w-[12rem] truncate rounded-full bg-secondary px-2 py-0.5 font-mono text-xs font-bold text-secondary-foreground">
               {item.reference_code}
             </span>
           </div>
 
           {/* Reporter contact is visible here and nowhere else. */}
-          <dl className="grid grid-cols-2 gap-2 rounded-lg bg-secondary px-3 py-2 text-xs">
+          <dl className="grid grid-cols-1 gap-2 rounded-lg bg-secondary px-3 py-2 text-xs sm:grid-cols-2">
             <div>
               <dt className="text-muted-foreground">Reporter</dt>
               <dd className="font-semibold text-foreground">{item.reporter_name}</dd>
@@ -398,7 +398,7 @@ function AuditPanel({ token }: { token: string }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[40rem] text-sm">
+      <table className="w-full min-w-[36rem] text-sm">
         <caption className="sr-only">Audit log</caption>
         <thead>
           <tr className="border-b border-border text-left text-xs text-muted-foreground">

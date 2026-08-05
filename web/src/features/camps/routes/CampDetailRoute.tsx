@@ -147,7 +147,7 @@ export function CampDetailRoute() {
         <h2 className="text-base font-bold text-foreground">{t("detail.location")}</h2>
         <p className="flex items-start gap-2 text-sm text-muted-foreground">
           <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span>
+          <span className="min-w-0 break-words">
             {[data.village_or_locality, data.lsg_name, data.taluk, data.district_code]
               .filter(Boolean)
               .join(", ")}

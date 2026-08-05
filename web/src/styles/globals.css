@@ -68,15 +68,17 @@
 
 /* Theme switch: animate the token values, not every element individually.
    ThemeToggle adds `.theme-transition` to <html> for ~one frame, then removes
-   it on transitionend, so background/border/color morph over 280ms. */
+   it on transitionend, so background/border/color morph over --motion-theme.
+   --ease-emphasis (fast start) is what makes it feel instant rather than laggy —
+   the colour starts moving the moment you tap and settles smoothly. */
 .theme-transition,
 .theme-transition *,
 .theme-transition *::before,
 .theme-transition *::after {
   transition:
-    background-color var(--motion-base) var(--ease-standard),
-    border-color var(--motion-base) var(--ease-standard),
-    color var(--motion-base) var(--ease-standard) !important;
+    background-color var(--motion-theme) var(--ease-emphasis),
+    border-color var(--motion-theme) var(--ease-emphasis),
+    color var(--motion-theme) var(--ease-emphasis) !important;
 }
 
 /* Tabular numerals for phone numbers, counts, distances — alignment matters
@@ -84,6 +86,43 @@
 .num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
+}
+
+/* Skeleton shimmer: a light band sweeps across the bar instead of a flat
+   opacity pulse. Decorative only — the bars are aria-hidden and the container
+   announces the load once via aria-busy. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+html.dark .skeleton-shimmer::after {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 60%
+  );
+}
+
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 /* The single card/surface primitive. */

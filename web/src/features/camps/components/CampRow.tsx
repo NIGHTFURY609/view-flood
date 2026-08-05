@@ -55,7 +55,7 @@ export function CampRow({ camp }: { camp: CampListItem }) {
             href={`tel:${camp.camp_phone_primary}`}
             aria-label={`${t("action.call")} ${camp.name}`}
             className={cn(
-              "flex w-12 items-center justify-center bg-surface text-accent",
+              "flex min-h-11 w-12 items-center justify-center bg-surface text-accent",
               "transition-colors duration-(--duration-fast) hover:bg-secondary",
             )}
           >
@@ -68,7 +68,7 @@ export function CampRow({ camp }: { camp: CampListItem }) {
           rel="noopener noreferrer"
           aria-label={`${t("action.directions")} — ${camp.name}`}
           className={cn(
-            "flex w-12 items-center justify-center bg-surface text-accent",
+            "flex min-h-11 w-12 items-center justify-center bg-surface text-accent",
             "transition-colors duration-(--duration-fast) hover:bg-secondary",
           )}
         >

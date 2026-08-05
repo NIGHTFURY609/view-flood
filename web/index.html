@@ -39,9 +39,122 @@
         }
       })();
     </script>
+
+    <!--
+      Pre-JS splash. Renders before the bundle downloads so first load is never
+      a blank page. Colors are hardcoded (Tailwind tokens only exist after JS);
+      the `.dark` class above is already set, so `html.dark` selectors work.
+      main.tsx fades this out once React has mounted.
+    -->
+    <style>
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #fafaf8;
+        color: #17170f;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        transition: opacity 240ms ease;
+      }
+      html.dark #splash {
+        background: #121212;
+        color: #f2f2f0;
+      }
+      #splash.splash--hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .splash__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 24px;
+        text-align: center;
+      }
+      .splash__logo {
+        width: 64px;
+        height: 64px;
+        display: grid;
+        place-items: center;
+      }
+      .splash__logo svg {
+        width: 56px;
+        height: 56px;
+        stroke: #c2410c;
+      }
+      html.dark .splash__logo svg {
+        stroke: #ff6a3d;
+      }
+      .splash__name {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .splash__tag {
+        margin: 0;
+        font-size: 13px;
+        color: #6b6b61;
+      }
+      html.dark .splash__tag {
+        color: #86867f;
+      }
+      .splash__spinner {
+        width: 28px;
+        height: 28px;
+        margin-top: 8px;
+        border-radius: 50%;
+        border: 3px solid rgba(194, 65, 12, 0.25);
+        border-top-color: #c2410c;
+        animation: splash-spin 800ms linear infinite;
+      }
+      html.dark .splash__spinner {
+        border-color: rgba(255, 106, 61, 0.25);
+        border-top-color: #ff6a3d;
+      }
+      @keyframes splash-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .splash__spinner {
+          animation: none;
+        }
+        #splash {
+          transition: none;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="splash" role="status" aria-label="Loading Kerala Camp Check">
+      <div class="splash__inner">
+        <div class="splash__logo" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="m4.93 4.93 4.24 4.24" />
+            <path d="m14.83 9.17 4.24-4.24" />
+            <path d="m14.83 14.83 4.24 4.24" />
+            <path d="m9.17 14.83-4.24 4.24" />
+            <circle cx="12" cy="12" r="4" />
+          </svg>
+        </div>
+        <p class="splash__name">Kerala Camp Check</p>
+        <p class="splash__tag">Community-verified relief camp information</p>
+        <span class="splash__spinner" aria-hidden="true"></span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

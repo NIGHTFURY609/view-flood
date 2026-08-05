@@ -2,24 +2,24 @@ import {
   ArrowUp,
   ClipboardList,
   LifeBuoy,
-  Moon,
   MapPinned,
   PackageSearch,
   Phone,
   Plus,
-  Sun,
   WifiOff,
+  X,
 } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NavLink, Outlet, Link } from "react-router";
 
 import { InfoTip } from "@/shared/components/InfoTip";
 import { Button } from "@/shared/components/ui/button";
+import { LanguagePill } from "@/shared/components/LanguagePill";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useOnline } from "@/shared/hooks/useGeolocation";
 import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
-import { useTheme } from "@/shared/lib/theme";
 
 interface NavItem {
   readonly to: string;
@@ -35,12 +35,10 @@ const NAV_ITEMS: readonly NavItem[] = [
 ];
 
 const EMERGENCY_NUMBER = "1077";
+const DISCLAIMER_KEY = "kcc.disclaimer.dismissed";
 
 function Wordmark() {
   const { t } = useI18n();
-  // No aria-label here: the visible name plus tagline already form a good
-  // accessible name, and an aria-label that omitted the tagline broke the
-  // WCAG 2.5.3 "label in name" rule.
   return (
     <Link to="/" className="flex min-w-0 items-center gap-2 rounded-lg py-1 pr-2">
       <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
@@ -58,40 +56,6 @@ function Wordmark() {
   );
 }
 
-function Toggles() {
-  const { t, locale, toggle: toggleLocale } = useI18n();
-  const { theme, toggle: toggleTheme } = useTheme();
-
-  return (
-    <div className="flex items-center gap-1">
-      {/* The accessible name must CONTAIN the visible text (WCAG 2.5.3), so the
-          visible label leads and the explanation follows via title. */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleLocale}
-        title={t("lang.toggle")}
-        className="px-2 text-xs font-semibold"
-      >
-        {locale === "en" ? "മലയാളം" : "English"}
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleTheme}
-        aria-label={t("theme.toggle")}
-        aria-pressed={theme === "dark"}
-      >
-        {theme === "dark" ? (
-          <Sun className="size-5" aria-hidden="true" />
-        ) : (
-          <Moon className="size-5" aria-hidden="true" />
-        )}
-      </Button>
-    </div>
-  );
-}
-
 function EmergencyButton({ className }: { className?: string }) {
   const { t } = useI18n();
   return (
@@ -99,9 +63,9 @@ function EmergencyButton({ className }: { className?: string }) {
       href={`tel:${EMERGENCY_NUMBER}`}
       aria-label={t("tip.emergency")}
       className={cn(
-        "inline-flex min-h-11 items-center gap-2 rounded-lg bg-critical px-3",
-        "text-sm font-bold text-critical-foreground",
-        "transition-colors duration-(--duration-fast) hover:bg-critical/90",
+        "inline-flex min-h-11 items-center gap-2 rounded-lg bg-danger-call px-3",
+        "text-sm font-bold text-danger-call-foreground",
+        "transition-colors duration-(--duration-fast) hover:bg-danger-call/90",
         className,
       )}
     >
@@ -133,7 +97,7 @@ function SurveyButton() {
       onClick={handleClick}
       aria-label="Report current camp status — volunteer survey"
       className={cn(
-        "fixed bottom-20 right-4 z-(--z-header) lg:bottom-6",
+        "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-(--z-header) lg:bottom-6",
         "flex items-center justify-center gap-2 rounded-full shadow-overlay",
         "bg-accent text-accent-foreground text-sm font-semibold",
         "transition-all duration-300 hover:bg-accent/90",
@@ -172,10 +136,43 @@ function BackToTop() {
       size="icon"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label={t("action.backToTop")}
-      className="fixed bottom-32 right-4 z-(--z-header) rounded-full shadow-overlay lg:bottom-[4.5rem]"
+      className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-4 z-(--z-header) rounded-full shadow-overlay lg:bottom-[4.5rem]"
     >
       <ArrowUp className="size-5" aria-hidden="true" />
     </Button>
+  );
+}
+
+function DisclaimerBar() {
+  const { t } = useI18n();
+  const [dismissed, setDismissed] = useState(
+    () => typeof sessionStorage !== "undefined" && sessionStorage.getItem(DISCLAIMER_KEY) === "1",
+  );
+
+  if (dismissed) return null;
+
+  return (
+    <div className="border-b border-border bg-secondary">
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-2 px-3 py-2 sm:px-4">
+        <p className="text-xs font-medium text-secondary-foreground">{t("disclaimer.title")}</p>
+        <InfoTip label={t("disclaimer.body")} />
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              sessionStorage.setItem(DISCLAIMER_KEY, "1");
+            } catch {
+              /* sessionStorage unavailable — bar just stays */
+            }
+            setDismissed(true);
+          }}
+          aria-label={t("action.dismiss")}
+          className="relative ml-auto inline-flex size-7 items-center justify-center rounded-md text-muted-foreground before:absolute before:-inset-2 before:rounded-md before:content-[''] hover:bg-surface hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -183,40 +180,38 @@ export function RootLayout() {
   const { t } = useI18n();
   const online = useOnline();
   const headerRef = useRef<HTMLElement>(null);
+  const [scrolled, setScrolled] = useState(false);
 
-  /**
-   * Publish the real header height as --header-h so sticky bars can sit exactly
-   * below it. The prototype hardcoded `top-[5.4rem] lg:top-[3.6rem]` in five
-   * route files, which broke whenever header content changed.
-   */
   useLayoutEffect(() => {
     const header = headerRef.current;
     if (!header) return;
-
     const publish = () => {
       document.documentElement.style.setProperty(
         "--header-h",
         `${Math.round(header.getBoundingClientRect().height)}px`,
       );
     };
-
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
 
-  const navClass = useCallback(
-    ({ isActive }: { isActive: boolean }) =>
-      cn(
-        "inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold",
-        "transition-colors duration-(--duration-fast)",
-        isActive
-          ? "bg-secondary text-foreground"
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-      ),
-    [],
-  );
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const navClass = (isActive: boolean) =>
+    cn(
+      "inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold",
+      "transition-colors duration-(--duration-fast)",
+      isActive
+        ? "bg-secondary text-foreground"
+        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+    );
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -232,10 +227,13 @@ export function RootLayout() {
         {t("a11y.skipToContent")}
       </a>
 
-      {/* One header, responsive. The prototype maintained two parallel copies. */}
       <header
         ref={headerRef}
-        className="sticky top-0 z-(--z-header) border-b border-border bg-surface/95 backdrop-blur"
+        className={cn(
+          "sticky top-0 z-(--z-header) border-b border-border bg-surface/95 backdrop-blur",
+          "transition-shadow duration-(--duration-fast)",
+          scrolled && "shadow-sm",
+        )}
       >
         <div className="mx-auto flex w-full max-w-6xl items-center gap-2 px-3 py-2 sm:px-4">
           <Wordmark />
@@ -243,7 +241,11 @@ export function RootLayout() {
             <ul className="flex items-center gap-1">
               {NAV_ITEMS.map((item) => (
                 <li key={item.to}>
-                  <NavLink to={item.to} end={item.to === "/"} className={navClass}>
+                  <NavLink
+                    to={item.to}
+                    end={item.to === "/"}
+                    className={({ isActive }) => navClass(isActive)}
+                  >
                     <item.icon className="size-4" aria-hidden="true" />
                     {t(item.labelKey)}
                   </NavLink>
@@ -251,8 +253,9 @@ export function RootLayout() {
               ))}
             </ul>
           </nav>
-          <div className="ml-auto flex items-center gap-1 lg:ml-2">
-            <Toggles />
+          <div className="ml-auto flex items-center gap-2 lg:ml-2">
+            <LanguagePill className="hidden sm:inline-grid" />
+            <ThemeToggle />
             <EmergencyButton />
           </div>
         </div>
@@ -268,17 +271,12 @@ export function RootLayout() {
         </div>
       ) : null}
 
-      {/* GUARD: never dismissible. PRD §7 — never claim official status. */}
-      <div className="border-b border-border bg-secondary">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-1 px-3 sm:px-4">
-          <p className="text-xs font-medium text-secondary-foreground">
-            {t("disclaimer.title")}
-          </p>
-          <InfoTip label={t("disclaimer.body")} />
-        </div>
-      </div>
+      <DisclaimerBar />
 
-      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-3 pb-24 pt-4 sm:px-4 lg:pb-10">
+      <main
+        id="main"
+        className="mx-auto w-full max-w-6xl flex-1 px-3 pb-28 pt-4 sm:px-4 lg:pb-10"
+      >
         <Outlet />
       </main>
 
@@ -296,20 +294,20 @@ export function RootLayout() {
             </Link>
             <a
               href={`tel:${EMERGENCY_NUMBER}`}
-              className="inline-flex min-h-11 items-center rounded-sm text-xs font-semibold text-critical underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-sm text-xs font-bold text-danger-call underline-offset-2 hover:underline"
             >
+              <Phone className="size-3.5" aria-hidden="true" />
               {t("footer.emergency")}
             </a>
           </div>
         </div>
       </footer>
 
-      {/* Bottom tab bar is a genuinely mobile-only affordance, not duplicated
-          chrome. It gets its own landmark label so screen-reader users are not
-          offered two identically-named navigations. */}
+      {/* Bottom tab bar: thumb-reachable primary nav. Gets its own landmark label
+          and respects the safe-area inset on modern phones. */}
       <nav
         aria-label={t("a11y.mobileNav")}
-        className="fixed inset-x-0 bottom-0 z-(--z-header) grid grid-cols-4 border-t border-border bg-surface/95 backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-(--z-header) grid grid-cols-4 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
         {NAV_ITEMS.map((item) => (
           <NavLink

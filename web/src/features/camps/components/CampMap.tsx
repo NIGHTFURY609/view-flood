@@ -119,7 +119,10 @@ export function CampMap({
         ref={containerRef}
         role="application"
         aria-label={t("map.pointsList")}
-        className={cn("h-[420px] w-full overflow-hidden rounded-xl border border-border", className)}
+        className={cn(
+          "h-[50dvh] max-h-[420px] min-h-64 w-full overflow-hidden rounded-xl border border-border",
+          className,
+        )}
       />
 
       <MapLegend />

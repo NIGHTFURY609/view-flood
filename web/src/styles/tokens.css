@@ -32,6 +32,7 @@
  *   verified/surface                    4.5
  *   unverified/surface                  4.5
  *   critical/surface                    4.5
+ *   critical-foreground/critical        4.5
  *   high/surface                        4.5
  *   open-soft/open                       4.5
  *   closed-soft/closed                  4.5
@@ -147,6 +148,7 @@
   /* Motion tokens (CSS side; anime.js uses its own JS durations). */
   --motion-instant: 100ms;
   --motion-fast: 180ms;
+  --motion-theme: 140ms;
   --motion-base: 280ms;
   --motion-slow: 420ms;
 
@@ -204,7 +206,7 @@
   --unverified-foreground: #92600a;
   --unverified-soft: #fbf0db;
   --critical: #c01717;
-  --critical-foreground: #c01717;
+  --critical-foreground: #ffffff;
   --critical-soft: #fbe7e7;
   --high: #92600a;
   --high-foreground: #92600a;
@@ -265,7 +267,7 @@
   --unverified-foreground: #fbbf24;
   --unverified-soft: #2e2410;
   --critical: #ef4444;
-  --critical-foreground: #ef4444;
+  --critical-foreground: #1a0d06;
   --critical-soft: #1a0606;
   --high: #fbbf24;
   --high-foreground: #fbbf24;

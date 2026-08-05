@@ -246,7 +246,7 @@ export function CheckInCard({ campId, count }: { campId: string; count: number }
                     {entry.is_open ? t("status.active") : t("status.inactive")}
                   </span>
                   {entry.note ? (
-                    <span className="block text-muted-foreground">{entry.note}</span>
+                    <span className="block break-words text-muted-foreground">{entry.note}</span>
                   ) : null}
                 </span>
               </li>
