@@ -69,12 +69,14 @@ async def refresh(request: Request, response: Response) -> dict[str, bool]:
 
     new_access = create_access_token(str(claims["sub"]), settings)
     secure = settings.environment == "production"
+    # Must match set_auth_cookies: SameSite=None in production, since web (Vercel)
+    # and API (Render) are cross-site there.
     response.set_cookie(
         "access_token",
         new_access,
         httponly=True,
         secure=secure,
-        samesite="lax",
+        samesite="none" if secure else "lax",
         max_age=settings.access_token_expire_minutes * 60,
         path="/api/v1",
     )

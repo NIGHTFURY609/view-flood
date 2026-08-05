@@ -62,12 +62,20 @@ def set_auth_cookies(
     settings: Settings,
 ) -> None:
     secure = settings.environment == "production"
+    # Web (Vercel) and API (Render) live on different domains in production, so
+    # every request is cross-site. SameSite=Lax cookies are never sent on
+    # cross-site XHR/fetch (only same-site or top-level navigation), which would
+    # silently drop auth on every request after login. SameSite=None is required
+    # for that — and browsers only honor None when Secure is also set, which is
+    # already true in production. Local dev stays same-origin via the Vite proxy,
+    # where Lax is fine and Secure would break cookies over plain http.
+    samesite = "none" if secure else "lax"
     response.set_cookie(
         "access_token",
         access_token,
         httponly=True,
         secure=secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=settings.access_token_expire_minutes * 60,
         path="/api/v1",
     )
@@ -78,7 +86,7 @@ def set_auth_cookies(
         refresh_token,
         httponly=True,
         secure=secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=settings.refresh_token_expire_days * 24 * 3600,
         path="/api/v1/auth/refresh",
     )
@@ -91,7 +99,7 @@ def set_auth_cookies(
         "true",
         httponly=False,
         secure=secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=settings.refresh_token_expire_days * 24 * 3600,
         path="/",
     )
