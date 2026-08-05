@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import Cookies from "js-cookie";
 
 import { adminClient } from "@/features/admin/api/adminClient";
+import { AUTH_MODE, hasSession, tokenStore } from "@/features/admin/auth/tokenStore";
 import type { AdminProfile } from "@/features/admin/types";
-
-const LOGGED_IN_COOKIE = "logged_in";
 
 interface AuthContextValue {
   user: AdminProfile | null;
@@ -21,12 +19,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // On every mount/reload: probe /me ONLY if the logged_in cookie says a session
-  // exists. No cookie → no wasted round-trip, straight to the login screen.
+  // On every mount/reload: probe /me ONLY if a session plausibly exists (a stored
+  // token in bearer mode, or the logged_in cookie in cookie mode). Otherwise skip
+  // the round-trip and go straight to the login screen.
   useEffect(() => {
     let cancelled = false;
 
-    if (!Cookies.get(LOGGED_IN_COOKIE)) {
+    if (!hasSession()) {
       setLoading(false);
       return;
     }
@@ -49,13 +48,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    await adminClient.post("/auth/login", { email, password });
-    const res = await adminClient.get<AdminProfile>("/auth/me");
-    setUser(res.data);
+    const res = await adminClient.post<{ access_token?: string; refresh_token?: string }>(
+      "/auth/login",
+      { email, password },
+    );
+    if (AUTH_MODE === "bearer" && res.data.access_token) {
+      tokenStore.set(res.data.access_token, res.data.refresh_token);
+    }
+    const me = await adminClient.get<AdminProfile>("/auth/me");
+    setUser(me.data);
   }
 
   async function logout() {
     await adminClient.post("/auth/logout").catch(() => null);
+    tokenStore.clear();
     setUser(null);
   }
 
