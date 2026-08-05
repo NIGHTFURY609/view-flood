@@ -95,6 +95,14 @@ export function CampFilters({
 
   const selectedAmenities = parseAmenities(values.amenities);
 
+  // Selecting a district/taluk/LSG is incompatible with "my location" (distance
+  // sort against a fixed point). Override: clear the location filter so the
+  // two scopes can never silently conflict.
+  const pickLocation = (patch: Partial<CampListFilters> & Record<string, string>) => {
+    if (locationActive && onClearLocation) onClearLocation();
+    onChange(patch);
+  };
+
   const isDirty =
     values.district !== "" ||
     values.taluk !== "" ||
@@ -149,7 +157,7 @@ export function CampFilters({
         placeholder={t("filter.allDistricts")}
         value={values.district}
         options={(districts.data ?? []).map((d) => ({ value: d.code, label: d.name }))}
-        onChange={(next) => onChange({ district: next, taluk: "", lsg: "" })}
+        onChange={(next) => pickLocation({ district: next, taluk: "", lsg: "" })}
       />
 
       <FilterSelect
@@ -159,7 +167,7 @@ export function CampFilters({
         value={values.taluk}
         disabled={!values.district}
         options={talukOptions.map((name) => ({ value: name, label: name }))}
-        onChange={(next) => onChange({ taluk: next, lsg: "" })}
+        onChange={(next) => pickLocation({ taluk: next, lsg: "" })}
       />
 
       <FilterSelect
@@ -169,7 +177,7 @@ export function CampFilters({
         value={values.lsg}
         disabled={!values.district}
         options={lsgOptions.map((name) => ({ value: name, label: name }))}
-        onChange={(next) => onChange({ lsg: next })}
+        onChange={(next) => pickLocation({ lsg: next })}
       />
 
       <fieldset>
