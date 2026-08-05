@@ -10,15 +10,23 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { NavLink, Outlet, Link } from "react-router";
+import { NavLink, Outlet, Link, useLocation } from "react-router";
 
 import { InfoTip } from "@/shared/components/InfoTip";
 import { Button } from "@/shared/components/ui/button";
 import { LanguagePill } from "@/shared/components/LanguagePill";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { useFooterLift } from "@/shared/hooks/useFooterLift";
 import { useOnline } from "@/shared/hooks/useGeolocation";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
+import {
+  DRAG_THRESHOLD,
+  FAB_MARGIN,
+  computeSnapLeft,
+  dragToPosition,
+  type FabPosition,
+} from "@/shared/lib/fabDrag";
 
 interface NavItem {
   readonly to: string;
@@ -76,20 +84,117 @@ function EmergencyButton({ className }: { className?: string }) {
 
 const SURVEY_URL = "https://forms.gle/tNRqJGTFSTFSkMGMA";
 
-function SurveyButton() {
+interface SurveyButtonProps {
+  /** Px to raise the button above the footer while it is on screen. */
+  readonly lift: number;
+  /** Changes on navigation; used to reset any dragged position. */
+  readonly resetKey: string;
+}
+
+function SurveyButton({ lift, resetKey }: SurveyButtonProps) {
   const { t } = useI18n();
+  const ref = useRef<HTMLAnchorElement>(null);
+  const [dragged, setDragged] = useState<FabPosition | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const startRef = useRef<{ pointerId: number; x: number; y: number; origin: FabPosition } | null>(null);
+  const movedRef = useRef(false);
+
+  // Dragged position is temporary: it resets when the footer-lift engages
+  // (button returns to its docked slot, lifted) and on every navigation.
+  useEffect(() => {
+    setDragged(null);
+    setDragging(false);
+    startRef.current = null;
+    movedRef.current = false;
+  }, [resetKey, lift > 0]);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    startRef.current = {
+      pointerId: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      origin: { left: rect.left, top: rect.top },
+    };
+    movedRef.current = false;
+    setDragging(true);
+    el.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    const start = startRef.current;
+    const el = ref.current;
+    if (!start || !el || e.pointerId !== start.pointerId) return;
+    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > DRAG_THRESHOLD) {
+      movedRef.current = true;
+    }
+    setDragged(
+      dragToPosition(
+        start.origin,
+        { x: start.x, y: start.y },
+        { x: e.clientX, y: e.clientY },
+        { width: window.innerWidth, height: window.innerHeight },
+        { width: el.offsetWidth, height: el.offsetHeight },
+        FAB_MARGIN,
+      ),
+    );
+  };
+
+  const endDrag = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    const start = startRef.current;
+    const el = ref.current;
+    if (!start || !el || e.pointerId !== start.pointerId) return;
+    if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    startRef.current = null;
+    setDragging(false);
+    if (movedRef.current) {
+      // Snap to the nearest horizontal edge at the release height.
+      setDragged((prev) => {
+        const width = el.offsetWidth;
+        const centerX = (prev?.left ?? start.origin.left) + width / 2;
+        return {
+          left: computeSnapLeft(centerX, window.innerWidth, width, FAB_MARGIN),
+          top: prev?.top ?? start.origin.top,
+        };
+      });
+    }
+  };
+
+  const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (movedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      movedRef.current = false;
+    }
+  };
+
   return (
     <a
+      ref={ref}
       href={SURVEY_URL}
       target="_blank"
       rel="noopener noreferrer"
+      draggable={false}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onClick={onClick}
       aria-label={t("survey.button")}
       className={cn(
-        "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-(--z-header) lg:bottom-6",
+        "fixed z-(--z-header) touch-none select-none",
         "flex items-center justify-center gap-2 rounded-full px-4 py-2.5 shadow-overlay",
         "bg-accent text-accent-foreground text-sm font-semibold",
         "transition-colors duration-(--duration-fast) hover:bg-accent/90",
+        dragging ? "cursor-grabbing" : "cursor-grab",
+        dragged
+          ? "left-auto top-auto"
+          : "right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom)+var(--fab-lift,0px))] lg:bottom-[calc(1.5rem+var(--fab-lift,0px))]",
       )}
+      style={dragged ? { left: dragged.left, top: dragged.top } : undefined}
     >
       <ClipboardList className="size-4 shrink-0" aria-hidden="true" />
       <span className="whitespace-nowrap">{t("survey.button")}</span>
@@ -116,7 +221,7 @@ function BackToTop() {
       size="icon"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label={t("action.backToTop")}
-      className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-4 z-(--z-header) rounded-full shadow-overlay lg:bottom-[4.5rem]"
+      className="fixed bottom-[calc(7.5rem+env(safe-area-inset-bottom)+var(--fab-lift,0px))] right-4 z-(--z-header) rounded-full shadow-overlay lg:bottom-[calc(4.5rem+var(--fab-lift,0px))]"
     >
       <ArrowUp className="size-5" aria-hidden="true" />
     </Button>
@@ -159,7 +264,11 @@ function DisclaimerBar() {
 export function RootLayout() {
   const { t } = useI18n();
   const online = useOnline();
+  const { pathname } = useLocation();
   const headerRef = useRef<HTMLElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
+  const mobileNavRef = useRef<HTMLElement>(null);
+  const footerLift = useFooterLift(footerRef, mobileNavRef);
   const [scrolled, setScrolled] = useState(false);
 
   useLayoutEffect(() => {
@@ -176,6 +285,15 @@ export function RootLayout() {
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
+
+  // Floating actions ride the footer's top edge while it is on screen, so the
+  // footer text (data-source note, helplines/emergency links) stays readable.
+  useEffect(() => {
+    document.documentElement.style.setProperty("--fab-lift", `${footerLift}px`);
+    return () => {
+      document.documentElement.style.removeProperty("--fab-lift");
+    };
+  }, [footerLift]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -260,7 +378,7 @@ export function RootLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border bg-surface">
+      <footer ref={footerRef} className="border-t border-border bg-surface">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-6 sm:px-4">
           <p className="text-xs leading-relaxed text-muted-foreground text-pretty">
             {t("footer.dataSource")}
@@ -286,6 +404,7 @@ export function RootLayout() {
       {/* Bottom tab bar: thumb-reachable primary nav. Gets its own landmark label
           and respects the safe-area inset on modern phones. */}
       <nav
+        ref={mobileNavRef}
         aria-label={t("a11y.mobileNav")}
         className="fixed inset-x-0 bottom-0 z-(--z-header) grid grid-cols-4 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
@@ -308,7 +427,7 @@ export function RootLayout() {
         ))}
       </nav>
 
-      <SurveyButton />
+      <SurveyButton lift={footerLift} resetKey={pathname} />
       <BackToTop />
     </div>
   );
