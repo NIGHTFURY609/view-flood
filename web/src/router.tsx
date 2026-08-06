@@ -12,6 +12,7 @@ import { CampDetailRoute as AdminCampDetailRoute } from "@/features/admin/routes
 import { CampsManagementRoute } from "@/features/admin/routes/CampsManagementRoute";
 import { LogsRoute } from "@/features/admin/routes/LogsRoute";
 import { ReportedCampsRoute } from "@/features/admin/routes/ReportedCampsRoute";
+import { RequirementsRoute } from "@/features/admin/routes/RequirementsRoute";
 import { CampDetailRoute } from "@/features/camps/routes/CampDetailRoute";
 import { CampsListRoute } from "@/features/camps/routes/CampsListRoute";
 import { HelplinesRoute } from "@/features/helplines/routes/HelplinesRoute";
@@ -65,6 +66,14 @@ export const router = createBrowserRouter([
                 handle: {
                   title: "Reported Camps",
                   subtitle: "Unverified camps awaiting review",
+                },
+              },
+              {
+                path: "camps/requirements",
+                element: <RequirementsRoute />,
+                handle: {
+                  title: "Requirement Requests",
+                  subtitle: "Supply requests awaiting review",
                 },
               },
               {

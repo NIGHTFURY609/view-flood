@@ -1,0 +1,63 @@
+import { keepPreviousData, queryOptions } from "@tanstack/react-query";
+
+import { adminClient } from "@/features/admin/api/adminClient";
+import type {
+  AdminRequirement,
+  AdminRequirementsParams,
+  RequirementCounts,
+} from "@/features/admin/types";
+import type { Page } from "@/shared/types/api";
+
+export function adminRequirementsQuery(params: AdminRequirementsParams) {
+  return queryOptions({
+    queryKey: ["admin", "requirements", params],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<Page<AdminRequirement>>("/admin/requirements", {
+        params,
+        signal,
+      });
+      return res.data;
+    },
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * Pending counts for the sidebar badge and the per-camp bubbles. Kept as its
+ * own query so the camps listing does not pay for a per-row count.
+ */
+export function adminRequirementCountsQuery() {
+  return queryOptions({
+    queryKey: ["admin", "requirements", "counts"],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<RequirementCounts>("/admin/requirements/counts", {
+        signal,
+      });
+      return res.data;
+    },
+    staleTime: 30_000,
+  });
+}
+
+export function adminCampRequirementsQuery(campId: string) {
+  return queryOptions({
+    queryKey: ["admin", "camp", campId, "requirements"],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<AdminRequirement[]>(
+        `/admin/camps/${campId}/requirements`,
+        { signal },
+      );
+      return res.data;
+    },
+    staleTime: 30_000,
+  });
+}
+
+export async function approveRequirement(id: string): Promise<void> {
+  await adminClient.post(`/admin/requirements/${id}/approve`);
+}
+
+export async function rejectRequirement(id: string, note?: string): Promise<void> {
+  await adminClient.post(`/admin/requirements/${id}/reject`, { note: note ?? null });
+}

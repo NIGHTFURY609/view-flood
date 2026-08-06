@@ -22,7 +22,9 @@ import {
   rejectAdminCamp,
   updateAdminCamp,
 } from "@/features/admin/api/adminCamps";
+import { adminCampRequirementsQuery } from "@/features/admin/api/adminRequirements";
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog";
+import { RequirementCard } from "@/features/admin/components/RequirementCard";
 import { districtsQuery, lsgQuery, taluksQuery } from "@/features/camps/api";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -42,7 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { AdminReport, CampUpdatePayload } from "@/features/admin/types";
+import type { AdminReport, AdminRequirement, CampUpdatePayload } from "@/features/admin/types";
 import { cn } from "@/shared/lib/cn";
 import type { CampDetail, VerificationState } from "@/shared/types/api";
 
@@ -86,6 +88,7 @@ export function CampDetailRoute() {
   const camp = useQuery(adminCampQuery(campId));
   const images = useQuery(adminCampImagesQuery(campId));
   const reports = useQuery(adminCampReportsQuery(campId));
+  const requirements = useQuery(adminCampRequirementsQuery(campId));
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FormState | null>(null);
@@ -258,6 +261,11 @@ export function CampDetailRoute() {
                 />
 
                 <ReportsCard reports={reports.data ?? []} loading={reports.isPending} />
+
+                <RequirementsCard
+                  requirements={requirements.data ?? []}
+                  loading={requirements.isPending}
+                />
 
                 <div className="rounded-xl border border-[#f85149]/40 bg-[#f85149]/5 p-5">
                   <h3 className="text-sm font-semibold text-[#f85149]">Danger zone</h3>
@@ -445,6 +453,48 @@ function ImagesCard({
               </a>
             ))}
           </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RequirementsCard({
+  requirements,
+  loading,
+}: {
+  requirements: AdminRequirement[];
+  loading: boolean;
+}) {
+  if (!loading && requirements.length === 0) return null;
+
+  const pending = requirements.filter((r) => r.status === "pending").length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          Requirement requests
+          {pending > 0 && (
+            <span className="grid size-5 place-items-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
+              {pending}
+            </span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <div className="m-5 h-16 animate-pulse rounded-lg bg-secondary" />
+        ) : (
+          <ul className="divide-y divide-border/60">
+            {requirements.map((requirement) => (
+              <RequirementCard
+                key={requirement.id}
+                requirement={requirement}
+                showCamp={false}
+              />
+            ))}
+          </ul>
         )}
       </CardContent>
     </Card>

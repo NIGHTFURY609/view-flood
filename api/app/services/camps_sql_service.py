@@ -292,9 +292,9 @@ class CampsSqlService:
 
         rows = await connection.fetch(
             """
-            SELECT camp_id, item_key, urgency
+            SELECT camp_id, item_key, urgency, label
             FROM (
-                SELECT camp_id, item_key, urgency,
+                SELECT camp_id, item_key, urgency, label,
                        row_number() OVER (PARTITION BY camp_id ORDER BY urgency DESC) AS rn
                 FROM camp_needs
                 WHERE camp_id = ANY($1::uuid[])
@@ -307,7 +307,9 @@ class CampsSqlService:
         by_camp: dict[str, list[CampNeedSummary]] = {}
         for row in rows:
             by_camp.setdefault(str(row["camp_id"]), []).append(
-                CampNeedSummary(item_key=row["item_key"], urgency=row["urgency"])
+                CampNeedSummary(
+                    item_key=row["item_key"], urgency=row["urgency"], label=row["label"]
+                )
             )
 
         for item in items:

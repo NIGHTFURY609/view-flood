@@ -1,6 +1,6 @@
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
-import { needIcon } from "@/shared/lib/needs";
+import { isCatalogueKey, needIcon } from "@/shared/lib/needs";
 import type { CampNeedSummary } from "@/shared/types/api";
 
 /** Compact list of what a camp is asking for. Critical items are tinted red. */
@@ -33,7 +33,9 @@ export function NeedChips({
               )}
             >
               <Icon className="size-3.5" aria-hidden="true" />
-              {t(`need.${need.item_key}` as DictKey)}
+              {isCatalogueKey(need.item_key)
+                ? t(`need.${need.item_key}` as DictKey)
+                : (need.label ?? need.item_key)}
             </span>
           </li>
         );

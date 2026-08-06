@@ -28,6 +28,9 @@ PUBLIC_VERIFICATION_STATES: tuple[str, ...] = ("unverified", "verified")
 class CampNeedSummary(BaseModel):
     item_key: str
     urgency: UrgencyLevel
+    # Only meaningful for approved free-text requirements (other_<slug>), whose
+    # key has no dictionary entry on the client.
+    label: str | None = None
 
 
 class CampListItem(BaseModel):

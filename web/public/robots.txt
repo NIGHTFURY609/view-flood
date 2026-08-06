@@ -1,14 +1,12 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+# The landing page stays indexable — people need to find this site.
+# Camp detail pages carry incharge names and phone numbers, so they are not
+# for search indexes. /admin and /api are never public surfaces.
+#
+# robots.txt only stops crawling. Indexing of URLs discovered elsewhere is
+# stopped by the X-Robots-Tag headers in vercel.json.
 
 User-agent: *
+Disallow: /admin
+Disallow: /api
+Disallow: /camps/
 Allow: /

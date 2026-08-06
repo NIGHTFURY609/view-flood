@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Navigation, Phone, ScrollText, Users } from "lucide-react";
+import { MapPin, Navigation, PackagePlus, Phone, ScrollText, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
@@ -7,6 +7,7 @@ import { campNeedsQuery, campQuery } from "@/features/camps/api";
 import { CampMap } from "@/features/camps/components/CampMap";
 import { CampPhotos } from "@/features/camps/components/CampPhotos";
 import { DonateDialog } from "@/features/needs/components/DonateDialog";
+import { RequirementDialog } from "@/features/needs/components/RequirementDialog";
 import { EmergencyContacts } from "@/features/helplines/components/EmergencyContacts";
 import { Breadcrumbs } from "@/shared/components/Breadcrumbs";
 import { CheckInCard } from "@/shared/components/CheckInCard";
@@ -21,18 +22,23 @@ import {
   VerificationBadge,
 } from "@/shared/components/badges";
 import { Button } from "@/shared/components/ui/button";
+import { useNoIndex } from "@/shared/hooks/useNoIndex";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { amenityIcon } from "@/shared/lib/amenities";
 import { cn } from "@/shared/lib/cn";
 import { googleMapsHref } from "@/shared/lib/maps";
 import { displayPhone, formatIst } from "@/shared/lib/format";
-import { needIcon } from "@/shared/lib/needs";
+import { isCatalogueKey, needIcon } from "@/shared/lib/needs";
 
 export function CampDetailRoute() {
   const { t, tp } = useI18n();
   const { campId = "" } = useParams();
 
   const [donating, setDonating] = useState<string | null>(null);
+  const [requesting, setRequesting] = useState(false);
+
+  // Camp pages carry incharge names and phone numbers — not for search indexes.
+  useNoIndex();
 
   const camp = useQuery({ ...campQuery(campId), enabled: campId !== "" });
   const needs = useQuery({ ...campNeedsQuery(campId), enabled: campId !== "" });
@@ -242,7 +248,11 @@ export function CampDetailRoute() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-foreground">
-                      {t(`need.${need.item_key}` as DictKey)}
+                      {/* Approved free-text requests land as other_<slug>, which
+                          the dictionary cannot translate — those carry a label. */}
+                      {isCatalogueKey(need.item_key)
+                        ? t(`need.${need.item_key}` as DictKey)
+                        : (need.label ?? need.item_key)}
                     </span>
                     <span className="block text-xs text-muted-foreground">
                       {t("need.progress", {
@@ -277,6 +287,16 @@ export function CampDetailRoute() {
             })}
           </ul>
         )}
+
+        <Button
+          variant="outline"
+          size="md"
+          className="self-start"
+          onClick={() => setRequesting(true)}
+        >
+          <PackagePlus className="size-4" aria-hidden="true" />
+          {t("requirement.open")}
+        </Button>
       </section>
 
       <CheckInCard campId={data.id} count={data.checkin_count} />
@@ -296,6 +316,10 @@ export function CampDetailRoute() {
             onOpenChange={(next) => !next && setDonating(null)}
           />
         ))}
+
+      {requesting ? (
+        <RequirementDialog campId={data.id} open onOpenChange={setRequesting} />
+      ) : null}
 
       <Link
         to={`/report?campId=${data.id}`}

@@ -17,6 +17,7 @@ from app.routers import (
     admin,
     admin_camps,
     admin_logs,
+    admin_requirements,
     auth,
     camps,
     geography,
@@ -29,6 +30,7 @@ from app.services.image_service import ImageService
 from app.services.needs_service import NeedsService
 from app.services.otp_service import OtpService
 from app.services.report_service import ReportService
+from app.services.requirement_service import RequirementService
 from app.sms.base import get_sms_provider
 from app.storage.supabase_storage import SupabaseStorage
 
@@ -67,6 +69,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.report_service = ReportService(otp_service, image_service)
     app.state.checkin_service = CheckInService()
     app.state.needs_service = NeedsService(otp_service)
+    app.state.requirement_service = RequirementService()
     app.state.admin_service = AdminService()
     app.state.admin_auth = AdminAuth(settings)
 
@@ -128,6 +131,7 @@ def create_app() -> FastAPI:
         admin.router,
         admin_camps.router,
         admin_logs.router,
+        admin_requirements.router,
         auth.router,
     ):
         app.include_router(router, prefix="/api/v1")
