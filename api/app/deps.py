@@ -22,6 +22,7 @@ from app.services.image_service import ImageService
 from app.services.needs_service import NeedsService
 from app.services.otp_service import OtpService
 from app.services.report_service import ReportService
+from app.services.requirement_service import RequirementService
 
 
 def get_rest(request: Request) -> SupabaseRest:
@@ -72,6 +73,11 @@ def get_needs_service(request: Request) -> NeedsService:
     return service
 
 
+def get_requirement_service(request: Request) -> RequirementService:
+    service: RequirementService = request.app.state.requirement_service
+    return service
+
+
 def get_admin_service(request: Request) -> AdminService:
     service: AdminService = request.app.state.admin_service
     return service
@@ -90,6 +96,7 @@ ImageServiceDep = Annotated[ImageService, Depends(get_image_service)]
 ReportServiceDep = Annotated[ReportService, Depends(get_report_service)]
 CheckInServiceDep = Annotated[CheckInService, Depends(get_checkin_service)]
 NeedsServiceDep = Annotated[NeedsService, Depends(get_needs_service)]
+RequirementServiceDep = Annotated[RequirementService, Depends(get_requirement_service)]
 AdminServiceDep = Annotated[AdminService, Depends(get_admin_service)]
 AdminAuthDep = Annotated[AdminAuth, Depends(get_admin_auth)]
 CurrentAdminDep = Annotated[AdminUser, Depends(require_admin_cookie)]

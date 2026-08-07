@@ -238,6 +238,15 @@ export const api = {
       request<PledgeResult>(`/needs/${needId}/pledges`, { method: "POST", body: input }),
   },
 
+  requirements: {
+    /** Asks for supplies on behalf of a camp. Inert until an admin approves it. */
+    submit: (campId: string, input: RequirementInput) =>
+      request<RequirementResult>(`/camps/${campId}/requirements`, {
+        method: "POST",
+        body: input,
+      }),
+  },
+
   checkins: {
     list: (campId: string, signal?: AbortSignal) =>
       request<CheckInMasked[]>(`/camps/${campId}/checkins`, signal ? { signal } : {}),
@@ -310,6 +319,27 @@ export const api = {
       request<Weather>("/weather", { query: { lat, lng }, ...(signal ? { signal } : {}) }),
   },
 } as const;
+
+export interface RequirementItemInput {
+  readonly category: string;
+  /** A catalogue key, or "other" with a label. */
+  readonly item_key: string;
+  readonly label?: string | null;
+  readonly quantity: number;
+}
+
+export interface RequirementInput {
+  readonly submitter_name: string;
+  readonly submitter_phone: string;
+  readonly note?: string | null;
+  readonly items: readonly RequirementItemInput[];
+}
+
+export interface RequirementResult {
+  readonly ok: boolean;
+  readonly requirement_id: string;
+  readonly item_count: number;
+}
 
 export interface PledgeInput {
   readonly quantity: number;

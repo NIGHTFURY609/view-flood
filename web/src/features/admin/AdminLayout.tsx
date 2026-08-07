@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet } from "react-router";
 
 import { AuthProvider } from "@/features/admin/auth/AuthContext";
+import { useNoIndex } from "@/shared/hooks/useNoIndex";
 
 // Applied to <body> while the admin panel is mounted. Radix Dialog/Select
 // portal to <body>, OUTSIDE the wrapper div below — so scoping the theme only
@@ -19,6 +20,8 @@ const ADMIN_BODY_CLASSES = ["admin-theme", "dark", "font-inter"];
  * one picks up the admin (Kashti) theme automatically because we theme <body>.
  */
 export function AdminLayout() {
+  useNoIndex();
+
   useEffect(() => {
     document.body.classList.add(...ADMIN_BODY_CLASSES);
     return () => document.body.classList.remove(...ADMIN_BODY_CLASSES);

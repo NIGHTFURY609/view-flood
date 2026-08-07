@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronRight,
@@ -7,11 +8,13 @@ import {
   LogOut,
   MapPinned,
   Menu,
+  PackagePlus,
   ScrollText,
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useLocation, useMatches, useNavigate } from "react-router";
 
+import { adminRequirementCountsQuery } from "@/features/admin/api/adminRequirements";
 import { useAuth } from "@/features/admin/auth/AuthContext";
 import { Button } from "@/shared/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/shared/components/ui/sheet";
@@ -32,9 +35,20 @@ function linkClass({ isActive }: { isActive: boolean }): string {
   );
 }
 
+/** Same circular badge the filter button uses. Hidden at zero. */
+function CountBubble({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const [campsOpen, setCampsOpen] = useState(() => location.pathname.startsWith("/admin/camps"));
+  const counts = useQuery(adminRequirementCountsQuery());
 
   return (
     <div className="flex h-full flex-col bg-surface">
@@ -82,6 +96,11 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               <NavLink to="/admin/camps/reported" className={linkClass} onClick={onNavigate}>
                 <Flag className="size-4" aria-hidden="true" />
                 Reported Camps
+              </NavLink>
+              <NavLink to="/admin/camps/requirements" className={linkClass} onClick={onNavigate}>
+                <PackagePlus className="size-4" aria-hidden="true" />
+                Requirements
+                <CountBubble count={counts.data?.total ?? 0} />
               </NavLink>
             </div>
           )}

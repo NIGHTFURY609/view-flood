@@ -122,6 +122,8 @@ export interface SignedImage {
 export interface CampNeedSummary {
   readonly item_key: string;
   readonly urgency: UrgencyLevel;
+  /** Set only for approved free-text requirements, whose key has no dictionary entry. */
+  readonly label: string | null;
 }
 
 export interface CampNeed {

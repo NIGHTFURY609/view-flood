@@ -22,6 +22,7 @@ import {
   denyAdminCamp,
   rejectAdminCamp,
 } from "@/features/admin/api/adminCamps";
+import { adminRequirementCountsQuery } from "@/features/admin/api/adminRequirements";
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog";
 import { CampsFilterDialog, EMPTY_FILTERS } from "@/features/admin/components/CampsFilterDialog";
 import type { AdminCampsParams, CampFilters, Verification } from "@/features/admin/types";
@@ -86,6 +87,10 @@ export function CampsTable({ lockedVerification, reviewed, actions = "open" }: C
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, searchField, filters]);
+
+  // One aggregate for the whole table — the camps listing itself carries no
+  // per-row count, so this stays a separate, independently cached query.
+  const requirementCounts = useQuery(adminRequirementCountsQuery());
 
   const districts = useQuery(districtsQuery());
   const districtName = useMemo(
@@ -167,6 +172,7 @@ export function CampsTable({ lockedVerification, reviewed, actions = "open" }: C
     serial: serial(index),
     districtName,
     actions,
+    requirementCount: requirementCounts.data?.by_camp[camp.id] ?? 0,
     approving: approve.isPending && approve.variables === camp.id,
     rejecting: reject.isPending && reject.variables === camp.id,
     onOpen: () => openDetail(camp.id),
@@ -356,10 +362,29 @@ interface RowProps {
   actions: ActionsMode;
   approving: boolean;
   rejecting: boolean;
+  /** Pending requirement requests for this camp. 0 renders nothing. */
+  requirementCount: number;
   onOpen: () => void;
   onApprove: () => void;
   onReject: () => void;
   onDeny: () => void;
+}
+
+/**
+ * Pending-requirement bubble. Rendered inline beside the camp name rather than
+ * as its own column, so the fixed GRID and the virtualizer's row height stay
+ * untouched.
+ */
+function RequirementBubble({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      title={`${count} pending requirement request(s)`}
+      className="grid size-5 shrink-0 place-items-center rounded-full bg-accent text-xs font-bold text-accent-foreground"
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
 }
 
 function ReviewActions({
@@ -420,6 +445,7 @@ function TableRow({
   onOpen,
   onApprove,
   onReject,
+  requirementCount,
   onDeny,
   style,
 }: RowProps & { style: React.CSSProperties }) {
@@ -435,6 +461,7 @@ function TableRow({
         {camp.verification_state === "verified" && (
           <BadgeCheck className="size-4 shrink-0 text-[#3fb950]" aria-label="Verified" />
         )}
+        <RequirementBubble count={requirementCount} />
       </span>
       <span className="truncate text-muted-foreground">
         {districtName.get(camp.district_code) ?? camp.district_code}
@@ -473,6 +500,7 @@ function CampCard({
   onApprove,
   onReject,
   onDeny,
+  requirementCount,
 }: RowProps) {
   const place = [
     districtName.get(camp.district_code) ?? camp.district_code,
@@ -493,6 +521,7 @@ function CampCard({
           {camp.verification_state === "verified" && (
             <BadgeCheck className="size-4 shrink-0 text-[#3fb950]" aria-label="Verified" />
           )}
+          <RequirementBubble count={requirementCount} />
         </div>
         <p className="mt-1 truncate text-xs text-muted-foreground">{place}</p>
         <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
