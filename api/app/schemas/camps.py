@@ -48,11 +48,6 @@ class CampListItem(BaseModel):
     urgency: UrgencyLevel
     reported_urgency: UrgencyLevel | None = None
     camp_phone_primary: str | None = None
-    amenities: list[str] = []
-    reported_people_count: int | None = None
-    reported_family_count: int | None = None
-    reported_children_count: int | None = None
-    checkin_count: int = 0
     report_count: int = 0
     status_last_confirmed_at: datetime | None = None
     updated_at: datetime
@@ -77,7 +72,6 @@ class CampDetail(CampListItem):
     verified_at: datetime | None = None
     verification_method: str | None = None
     verification_note: str | None = None
-    occupancy_updated_at: datetime | None = None
     source_published_at: date | None = None
     sources: list[CampSource] = []
 

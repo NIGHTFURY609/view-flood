@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Navigation, PackagePlus, Phone, ScrollText, Users } from "lucide-react";
+import { MapPin, Navigation, PackagePlus, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
@@ -10,7 +10,6 @@ import { DonateDialog } from "@/features/needs/components/DonateDialog";
 import { RequirementDialog } from "@/features/needs/components/RequirementDialog";
 import { EmergencyContacts } from "@/features/helplines/components/EmergencyContacts";
 import { Breadcrumbs } from "@/shared/components/Breadcrumbs";
-import { CheckInCard } from "@/shared/components/CheckInCard";
 import { DetailSkeleton } from "@/shared/components/Skeletons";
 import { EmptyState, ErrorState } from "@/shared/components/states";
 import {
@@ -24,14 +23,13 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { useNoIndex } from "@/shared/hooks/useNoIndex";
 import { useI18n, type DictKey } from "@/shared/i18n";
-import { amenityIcon } from "@/shared/lib/amenities";
 import { cn } from "@/shared/lib/cn";
 import { googleMapsHref } from "@/shared/lib/maps";
 import { displayPhone, formatIst } from "@/shared/lib/format";
 import { isCatalogueKey, needIcon } from "@/shared/lib/needs";
 
 export function CampDetailRoute() {
-  const { t, tp } = useI18n();
+  const { t } = useI18n();
   const { campId = "" } = useParams();
 
   const [donating, setDonating] = useState<string | null>(null);
@@ -194,42 +192,6 @@ export function CampDetailRoute() {
       <CampPhotos campId={data.id} />
 
       <section className="panel flex flex-col gap-3 p-4">
-        <h2 className="text-base font-bold text-foreground">{t("detail.inside")}</h2>
-        <dl className="flex flex-wrap gap-x-6 gap-y-2">
-          <Stat
-            icon={<Users className="size-4" aria-hidden="true" />}
-            label={t("detail.occupancy")}
-            value={data.reported_people_count}
-          />
-          <Stat
-            icon={<ScrollText className="size-4" aria-hidden="true" />}
-            label={tp("detail.reportedBy", data.report_count)}
-            value={data.report_count}
-          />
-        </dl>
-
-        {data.amenities.length > 0 ? (
-          <ul className="flex flex-wrap gap-1.5">
-            {data.amenities.map((key) => {
-              const Icon = amenityIcon(key);
-              if (!Icon) return null;
-              return (
-                <li
-                  key={key}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-verified-soft px-2.5 py-1 text-xs font-semibold text-verified"
-                >
-                  <Icon className="size-3.5" aria-hidden="true" />
-                  {t(`amenity.${key}` as DictKey)}
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground">{t("detail.amenitiesNone")}</p>
-        )}
-      </section>
-
-      <section className="panel flex flex-col gap-3 p-4">
         <h2 className="text-base font-bold text-foreground">{t("need.title")}</h2>
         {needs.isPending ? null : (needs.data?.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">{t("need.none")}</p>
@@ -299,8 +261,6 @@ export function CampDetailRoute() {
         </Button>
       </section>
 
-      <CheckInCard campId={data.id} count={data.checkin_count} />
-
       <section className="panel flex flex-col gap-3 p-4">
         <h2 className="text-base font-bold text-foreground">{t("help.title")}</h2>
         <EmergencyContacts districtCode={data.district_code} />
@@ -327,27 +287,6 @@ export function CampDetailRoute() {
       >
         {t("detail.correction")}
       </Link>
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number | null;
-}) {
-  if (value === null || value === 0) return null;
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-muted-foreground">{icon}</span>
-      <div>
-        <dt className="text-xs text-muted-foreground">{label}</dt>
-        <dd className="text-base font-bold text-foreground">{value.toLocaleString("en-IN")}</dd>
-      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-"""Public write surface: OTP, reports, check-ins, pledges, image flags.
+"""Public write surface: OTP, reports, pledges, image flags.
 
 Every handler runs inside a transaction. All of them return 503 with a clear
 message until SUPABASE_DB_URL is configured, rather than failing obscurely.
@@ -11,7 +11,6 @@ from fastapi import APIRouter, Request
 from app.core.errors import NotFoundError, OtpError, RateLimitedError
 from app.core.ip import client_ip, hash_ip
 from app.deps import (
-    CheckInServiceDep,
     DatabaseDep,
     ImageServiceDep,
     NeedsServiceDep,
@@ -20,9 +19,6 @@ from app.deps import (
     RequirementServiceDep,
 )
 from app.schemas.checkins import (
-    CheckInIn,
-    CheckInMaskedOut,
-    CheckInResultOut,
     PledgeIn,
     PledgeResultOut,
 )
@@ -85,37 +81,6 @@ async def submit_report(
         held_as_duplicate=result.held_as_duplicate,
         phone_unverified=result.phone_unverified,
     )
-
-
-@router.post("/camps/{camp_id}/checkins", response_model=CheckInResultOut)
-async def create_checkin(
-    camp_id: str,
-    payload: CheckInIn,
-    request: Request,
-    db: DatabaseDep,
-    checkins: CheckInServiceDep,
-) -> CheckInResultOut:
-    # Trust the path, not the body.
-    payload = payload.model_copy(update={"camp_id": camp_id})
-    ip_hash = hash_ip(client_ip(request))
-
-    async with db.transaction() as connection:
-        result = await checkins.record(connection, payload=payload, ip_hash=ip_hash)
-
-    return CheckInResultOut(
-        ok=result.ok, reason=result.reason, checkin_count=result.checkin_count
-    )
-
-
-@router.get("/camps/{camp_id}/checkins", response_model=list[CheckInMaskedOut])
-async def list_checkins(
-    camp_id: str,
-    db: DatabaseDep,
-    checkins: CheckInServiceDep,
-) -> list[CheckInMaskedOut]:
-    async with db.acquire() as connection:
-        rows = await checkins.recent(connection, camp_id)
-    return [CheckInMaskedOut.model_validate(row) for row in rows]
 
 
 @router.post("/needs/{need_id}/pledges", response_model=PledgeResultOut)

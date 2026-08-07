@@ -44,14 +44,6 @@ export function campNeedsQuery(id: string) {
   });
 }
 
-export function checkInsQuery(id: string) {
-  return queryOptions({
-    queryKey: queryKeys.checkins(id),
-    queryFn: ({ signal }) => api.checkins.list(id, signal),
-    staleTime: 30_000,
-  });
-}
-
 export function districtsQuery() {
   return queryOptions({
     queryKey: queryKeys.districts,

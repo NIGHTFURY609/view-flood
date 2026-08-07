@@ -78,7 +78,7 @@ export function CampPhotos({ campId }: { campId: string }) {
             <DialogTitle>{t("detail.reportImage")}</DialogTitle>
           </DialogHeader>
           <Label htmlFor="flag-reason" className="mb-1.5 block">
-            {t("checkin.note")}
+            {t("detail.reportImageReason")}
           </Label>
           <Textarea
             id="flag-reason"

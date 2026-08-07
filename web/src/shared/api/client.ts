@@ -7,9 +7,6 @@ import type {
   CampDetail,
   CampListItem,
   CampNeed,
-  CheckInInput,
-  CheckInMasked,
-  CheckInResult,
   District,
   EmergencyContact,
   FlaggedImage,
@@ -164,8 +161,6 @@ export interface CampsQueryParams {
   readonly district_code?: string;
   readonly taluk?: string;
   readonly lsg_name?: string;
-  /** Comma-separated amenity keys; the server applies AND semantics. */
-  readonly amenities?: string;
   readonly status?: "active" | "inactive" | "predesignated" | "all";
   readonly verified_only?: boolean;
   readonly q?: string;
@@ -242,16 +237,6 @@ export const api = {
     /** Asks for supplies on behalf of a camp. Inert until an admin approves it. */
     submit: (campId: string, input: RequirementInput) =>
       request<RequirementResult>(`/camps/${campId}/requirements`, {
-        method: "POST",
-        body: input,
-      }),
-  },
-
-  checkins: {
-    list: (campId: string, signal?: AbortSignal) =>
-      request<CheckInMasked[]>(`/camps/${campId}/checkins`, signal ? { signal } : {}),
-    create: (input: CheckInInput) =>
-      request<CheckInResult>(`/camps/${input.camp_id}/checkins`, {
         method: "POST",
         body: input,
       }),

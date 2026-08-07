@@ -15,13 +15,8 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
-import {
-  parseAmenities,
-  toggleAmenity,
-  type CampListFilters,
-} from "@/shared/hooks/useFilterParams";
+import { type CampListFilters } from "@/shared/hooks/useFilterParams";
 import { useI18n, type DictKey } from "@/shared/i18n";
-import { AMENITIES } from "@/shared/lib/amenities";
 import { cn } from "@/shared/lib/cn";
 
 const ALL = "__all__";
@@ -93,8 +88,6 @@ export function CampFilters({
     return [...new Set(narrowed.map((row) => row.name))].sort((a, b) => a.localeCompare(b));
   }, [lsgBodies.data, values.taluk]);
 
-  const selectedAmenities = parseAmenities(values.amenities);
-
   // Selecting a district/taluk/LSG is incompatible with "my location" (distance
   // sort against a fixed point). Override: clear the location filter so the
   // two scopes can never silently conflict.
@@ -108,7 +101,6 @@ export function CampFilters({
     values.taluk !== "" ||
     values.lsg !== "" ||
     values.q !== "" ||
-    values.amenities !== "" ||
     values.verified ||
     values.status !== "active";
 
@@ -223,34 +215,6 @@ export function CampFilters({
         />
         {t("filter.verifiedOnly")}
       </Label>
-
-      <fieldset>
-        <legend className="text-sm font-medium text-foreground">{t("filter.amenities")}</legend>
-        <p className="mb-2 mt-0.5 text-xs text-muted-foreground">{t("filter.amenitiesHint")}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {AMENITIES.map(({ key, icon: Icon }) => {
-            const active = selectedAmenities.includes(key);
-            return (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onChange({ amenities: toggleAmenity(values.amenities, key) })}
-                className={cn(
-                  "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5",
-                  "text-xs font-medium transition-colors duration-(--duration-fast)",
-                  active
-                    ? "border-verified bg-verified-soft text-verified"
-                    : "border-input bg-surface text-foreground hover:bg-secondary",
-                )}
-              >
-                <Icon className="size-3.5" aria-hidden="true" />
-                {t(`amenity.${key}` as DictKey)}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
 
       {isDirty ? (
         <Button variant="ghost" size="sm" onClick={onReset} className="self-start">

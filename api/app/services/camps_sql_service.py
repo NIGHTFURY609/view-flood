@@ -30,8 +30,7 @@ AUDIT_SNAPSHOT_COLUMNS = (
 LIST_COLUMNS = """
     id, name, name_ml, district_code, taluk, lsg_name, village_or_locality,
     latitude, longitude, status, verification_state, urgency, reported_urgency,
-    camp_phone_primary, amenities, reported_people_count, reported_family_count,
-    reported_children_count, checkin_count, report_count,
+    camp_phone_primary, report_count,
     status_last_confirmed_at, updated_at
 """
 
@@ -39,7 +38,7 @@ DETAIL_COLUMNS = (
     LIST_COLUMNS
     + """,
     building_type, lsg_type, landmark, camp_incharge_name, camp_phone_secondary,
-    verified_at, verification_method, verification_note, occupancy_updated_at,
+    verified_at, verification_method, verification_note,
     source_published_at
 """
 )
@@ -54,7 +53,6 @@ PUBLIC_STATES = ("unverified", "verified")
 def _row_to_list_item(row: asyncpg.Record, distance_km: float | None = None) -> CampListItem:
     data: dict[str, Any] = dict(row)
     data["id"] = str(data["id"])
-    data["amenities"] = list(data.get("amenities") or [])
     data["latitude"] = float(data["latitude"]) if data.get("latitude") is not None else None
     data["longitude"] = float(data["longitude"]) if data.get("longitude") is not None else None
     data["distance_km"] = distance_km
@@ -66,7 +64,6 @@ def _row_to_list_item(row: asyncpg.Record, distance_km: float | None = None) -> 
 def _row_to_detail(row: asyncpg.Record) -> CampDetail:
     data: dict[str, Any] = dict(row)
     data["id"] = str(data["id"])
-    data["amenities"] = list(data.get("amenities") or [])
     data["latitude"] = float(data["latitude"]) if data.get("latitude") is not None else None
     data["longitude"] = float(data["longitude"]) if data.get("longitude") is not None else None
     data["distance_km"] = None
@@ -102,7 +99,6 @@ class CampsSqlService:
         district_code: str | None = None,
         taluk: str | None = None,
         lsg_name: str | None = None,
-        amenities: str | None = None,
         status: str = "active",
         verified_only: bool = False,
         q: str | None = None,
@@ -135,11 +131,6 @@ class CampsSqlService:
             add("taluk = ${n}", taluk)
         if lsg_name:
             add("lsg_name = ${n}", lsg_name)
-        if amenities:
-            keys = [a.strip() for a in amenities.split(",") if a.strip()]
-            if keys:
-                # "has ALL of these facilities" — backed by the GIN index.
-                add("amenities @> ${n}::text[]", keys)
         if q:
             # Trigram-backed; matches substrings the way people actually search.
             add(
@@ -330,7 +321,6 @@ class CampsSqlService:
 
         data: dict[str, Any] = dict(row)
         data["id"] = str(data["id"])
-        data["amenities"] = list(data.get("amenities") or [])
         data["latitude"] = float(data["latitude"]) if data.get("latitude") is not None else None
         data["longitude"] = float(data["longitude"]) if data.get("longitude") is not None else None
         data["distance_km"] = None

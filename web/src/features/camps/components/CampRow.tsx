@@ -1,4 +1,4 @@
-import { Navigation, Phone, UserCheck } from "lucide-react";
+import { Navigation, Phone } from "lucide-react";
 import { Link } from "react-router";
 
 import {
@@ -38,12 +38,6 @@ export function CampRow({ camp }: { camp: CampListItem }) {
           {camp.distance_km !== null ? (
             <span className="text-xs font-semibold text-accent">
               {t("location.away", { km: formatDistanceKm(camp.distance_km) })}
-            </span>
-          ) : null}
-          {camp.checkin_count > 0 ? (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <UserCheck className="size-3.5" aria-hidden="true" />
-              {camp.checkin_count}
             </span>
           ) : null}
         </div>

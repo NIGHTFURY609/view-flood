@@ -1,6 +1,6 @@
 """Client IP extraction and hashing.
 
-The raw IP is never stored. Rate limiting and per-day check-in uniqueness use
+The raw IP is never stored. Rate limiting and per-day uniqueness use
 sha256("kcc:" + ip), matching the prototype so existing rows stay comparable.
 """
 

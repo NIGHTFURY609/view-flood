@@ -6,7 +6,6 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.checkins import CheckInIn
 from app.schemas.reports import ReportIn
 
 
@@ -80,29 +79,3 @@ class TestReportIn:
     def test_coordinates_are_range_checked(self) -> None:
         with pytest.raises(ValidationError):
             ReportIn(**_report(latitude=95.0))
-
-
-class TestCheckInIn:
-    def test_valid_checkin(self) -> None:
-        payload = CheckInIn(
-            camp_id="11111111-1111-4111-8111-111111111111",
-            phone="+919876543210",
-            amenities=["food", "toilets"],
-        )
-        assert payload.is_open is True
-
-    def test_unknown_amenity_is_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            CheckInIn(
-                camp_id="11111111-1111-4111-8111-111111111111",
-                phone="+919876543210",
-                amenities=["swimming_pool"],
-            )
-
-    def test_occupancy_counts_are_bounded(self) -> None:
-        with pytest.raises(ValidationError):
-            CheckInIn(
-                camp_id="11111111-1111-4111-8111-111111111111",
-                phone="+919876543210",
-                people_count=-1,
-            )

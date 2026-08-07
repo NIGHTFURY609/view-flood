@@ -118,7 +118,7 @@ export function useI18n(): I18nContextValue {
 
 /**
  * Pluralisation convention: a count-bearing key may have a `.one` sibling used
- * when count === 1, e.g. "detail.reportedBy" / "detail.reportedBy.one".
+ * when count === 1, e.g. "some.key" / "some.key.one".
  * Malayalam needs only one/other here, so ICU MessageFormat would be overkill.
  * Add new plural pairs with this same `.one` suffix.
  */

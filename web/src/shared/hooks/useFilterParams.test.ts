@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  campListFilterSchema,
-  needsFilterSchema,
-  parseAmenities,
-  toggleAmenity,
-} from "./useFilterParams";
+import { campListFilterSchema, needsFilterSchema } from "./useFilterParams";
 
 describe("campListFilterSchema", () => {
   it("applies defaults for an empty URL", () => {
@@ -50,21 +45,5 @@ describe("needsFilterSchema", () => {
   it("shares the district and page vocabulary with the camps list", () => {
     const parsed = needsFilterSchema.parse({ district: "PTA", page: "3" });
     expect(parsed).toEqual({ district: "PTA", item: "", page: 3 });
-  });
-});
-
-describe("amenities csv helpers", () => {
-  it("parses and trims", () => {
-    expect(parseAmenities("food, toilets ,,medical")).toEqual(["food", "toilets", "medical"]);
-  });
-
-  it("toggles a key on and off", () => {
-    expect(toggleAmenity("food,toilets", "medical")).toBe("food,toilets,medical");
-    expect(toggleAmenity("food,toilets", "food")).toBe("toilets");
-  });
-
-  it("round-trips an empty string", () => {
-    expect(parseAmenities("")).toEqual([]);
-    expect(toggleAmenity("", "food")).toBe("food");
   });
 });

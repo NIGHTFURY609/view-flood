@@ -97,7 +97,7 @@ class ReportResult(BaseModel):
 
 class OtpRequest(BaseModel):
     phone: str = Field(pattern=PHONE_PATTERN)
-    purpose: Literal["report", "pledge", "checkin"] = "report"
+    purpose: Literal["report", "pledge"] = "report"
 
 
 class OtpChallengeOut(BaseModel):
