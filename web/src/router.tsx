@@ -12,6 +12,8 @@ import { CampDetailRoute as AdminCampDetailRoute } from "@/features/admin/routes
 import { CampsManagementRoute } from "@/features/admin/routes/CampsManagementRoute";
 import { DonationsRoute } from "@/features/admin/routes/DonationsRoute";
 import { LogsRoute } from "@/features/admin/routes/LogsRoute";
+import { PledgeDetailRoute } from "@/features/admin/routes/PledgeDetailRoute";
+import { RequirementDetailRoute } from "@/features/admin/routes/RequirementDetailRoute";
 import { ReportedCampsRoute } from "@/features/admin/routes/ReportedCampsRoute";
 import { RequirementsRoute } from "@/features/admin/routes/RequirementsRoute";
 import { CampDetailRoute } from "@/features/camps/routes/CampDetailRoute";
@@ -89,6 +91,16 @@ export const router = createBrowserRouter([
                   title: "Donations",
                   subtitle: "Approved needs and who has pledged against them",
                 },
+              },
+              {
+                path: "requirements/donations/:pledgeId",
+                element: <PledgeDetailRoute />,
+                handle: { title: "Donation details", subtitle: "Review and verify a donation" },
+              },
+              {
+                path: "requirements/:requirementId",
+                element: <RequirementDetailRoute />,
+                handle: { title: "Request details", subtitle: "Review a supply request" },
               },
               {
                 path: "camps/:campId",

@@ -71,3 +71,32 @@ export interface AdminNeedsParams {
   cursor?: string;
   limit?: number;
 }
+
+/** A donation with need/camp context — the Donations approval list (PII). */
+export interface AdminPledgeRow {
+  id: string;
+  need_id: string;
+  camp_id: string;
+  camp_name: string | null;
+  district_code: string | null;
+  item_key: string;
+  label: string | null;
+  unit: string;
+  needed_qty: number;
+  quantity: number;
+  donor_name: string;
+  donor_phone: string;
+  phone_verified: boolean;
+  /** null = pending (not reviewed), true = verified (counts), false = unverified. */
+  admin_verified: boolean | null;
+  created_at: string;
+}
+
+export interface AdminPledgesParams {
+  district_code?: string;
+  item_key?: string;
+  verified?: "verified" | "unverified" | "pending";
+  q?: string;
+  cursor?: string;
+  limit?: number;
+}

@@ -5,6 +5,8 @@ import type {
   AdminNeed,
   AdminNeedsParams,
   AdminPledge,
+  AdminPledgeRow,
+  AdminPledgesParams,
   AdminRequirement,
   AdminRequirementsParams,
   RequirementCounts,
@@ -43,6 +45,17 @@ export function adminRequirementCountsQuery() {
   });
 }
 
+export function adminRequirementQuery(id: string) {
+  return queryOptions({
+    queryKey: ["admin", "requirement", id],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<AdminRequirement>(`/admin/requirements/${id}`, { signal });
+      return res.data;
+    },
+    staleTime: 30_000,
+  });
+}
+
 export function adminCampRequirementsQuery(campId: string) {
   return queryOptions({
     queryKey: ["admin", "camp", campId, "requirements"],
@@ -68,6 +81,41 @@ export function adminNeedsQuery(params: AdminNeedsParams) {
     staleTime: 30_000,
     placeholderData: keepPreviousData,
   });
+}
+
+/** Every donation, newest first — the Donations approval list. */
+export function adminPledgesQuery(params: AdminPledgesParams) {
+  return queryOptions({
+    queryKey: ["admin", "pledges", params],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<Page<AdminPledgeRow>>("/admin/pledges", {
+        params,
+        signal,
+      });
+      return res.data;
+    },
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function adminPledgeQuery(id: string) {
+  return queryOptions({
+    queryKey: ["admin", "pledge", id],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<AdminPledgeRow>(`/admin/pledges/${id}`, { signal });
+      return res.data;
+    },
+    staleTime: 30_000,
+  });
+}
+
+export async function verifyPledge(id: string): Promise<void> {
+  await adminClient.post(`/admin/pledges/${id}/verify`);
+}
+
+export async function unverifyPledge(id: string): Promise<void> {
+  await adminClient.post(`/admin/pledges/${id}/unverify`);
 }
 
 /** Individual donations for one need, with donor details (PII). */

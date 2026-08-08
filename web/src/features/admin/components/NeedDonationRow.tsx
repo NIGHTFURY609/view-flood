@@ -9,9 +9,62 @@ import { displayPhone } from "@/shared/lib/format";
 import { isCatalogueKey } from "@/shared/lib/needs";
 
 /**
- * One approved need with its donation tally. Expanding it lazily loads the
- * individual pledges — including donor name and phone (admin-only PII). Shared
- * by the global Donations view and each camp's admin detail page.
+ * The individual donations for a need — donor name, phone, quantity, verified
+ * flag and date (admin-only PII). Loads lazily: the query only runs once its
+ * row is expanded. Shared by the Donations table and each camp's detail card.
+ */
+export function PledgeList({
+  needId,
+  unit,
+  open,
+}: {
+  needId: string;
+  unit: string;
+  open: boolean;
+}) {
+  const pledges = useQuery(adminNeedPledgesQuery(needId, open));
+
+  if (pledges.isPending) {
+    return <div className="h-10 animate-pulse rounded bg-secondary" />;
+  }
+  if ((pledges.data?.length ?? 0) === 0) {
+    return <p className="text-xs text-muted-foreground">No donations recorded yet.</p>;
+  }
+  return (
+    <ul className="flex flex-col gap-2">
+      {(pledges.data ?? []).map((p) => (
+        <li
+          key={p.id}
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+        >
+          <span className="font-medium text-foreground">{p.donor_name}</span>
+          <a
+            href={`tel:${p.donor_phone}`}
+            className="inline-flex items-center gap-1 text-accent hover:underline"
+          >
+            <PhoneCall className="size-3" aria-hidden="true" />
+            {displayPhone(p.donor_phone)}
+          </a>
+          <span className="tabular-nums">
+            {p.quantity} {unit}
+          </span>
+          {p.phone_verified ? (
+            <span className="rounded bg-verified-soft px-1.5 py-0.5 text-verified">verified</span>
+          ) : (
+            <span className="rounded bg-[#d29922]/15 px-1.5 py-0.5 text-[#d29922]">
+              phone unverified
+            </span>
+          )}
+          <span>{fmtDate(p.created_at)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Compact expandable need row for embedded contexts (a camp's admin detail
+ * page). The global Donations table uses its own grid-aligned row.
  */
 export function NeedDonationRow({
   need,
@@ -27,7 +80,6 @@ export function NeedDonationRow({
     ? t(`need.${need.item_key}` as DictKey)
     : (need.label ?? need.item_key);
   const remaining = Math.max(0, need.needed_qty - need.pledged_qty);
-  const pledges = useQuery(adminNeedPledgesQuery(need.id, open));
 
   return (
     <li className="flex flex-col">
@@ -60,42 +112,7 @@ export function NeedDonationRow({
 
       {open ? (
         <div className="border-t border-border/60 bg-background/40 px-4 py-3 pl-11">
-          {pledges.isPending ? (
-            <div className="h-10 animate-pulse rounded bg-secondary" />
-          ) : (pledges.data?.length ?? 0) === 0 ? (
-            <p className="text-xs text-muted-foreground">No donations recorded yet.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {(pledges.data ?? []).map((p) => (
-                <li
-                  key={p.id}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
-                >
-                  <span className="font-medium text-foreground">{p.donor_name}</span>
-                  <a
-                    href={`tel:${p.donor_phone}`}
-                    className="inline-flex items-center gap-1 text-accent hover:underline"
-                  >
-                    <PhoneCall className="size-3" aria-hidden="true" />
-                    {displayPhone(p.donor_phone)}
-                  </a>
-                  <span className="tabular-nums">
-                    {p.quantity} {need.unit}
-                  </span>
-                  {p.phone_verified ? (
-                    <span className="rounded bg-verified-soft px-1.5 py-0.5 text-verified">
-                      verified
-                    </span>
-                  ) : (
-                    <span className="rounded bg-[#d29922]/15 px-1.5 py-0.5 text-[#d29922]">
-                      phone unverified
-                    </span>
-                  )}
-                  <span>{fmtDate(p.created_at)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <PledgeList needId={need.id} unit={need.unit} open={open} />
         </div>
       ) : null}
     </li>

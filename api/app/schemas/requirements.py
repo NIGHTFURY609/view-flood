@@ -152,6 +152,31 @@ class AdminPledgeOut(BaseModel):
     created_at: datetime
 
 
+class AdminPledgeRow(BaseModel):
+    """A donation with its need/camp context — the Donations approval list.
+
+    Admin-only (donor PII). ``admin_verified`` is the count-controlling flag:
+    only verified pledges are summed into camp_needs.pledged_qty.
+    """
+
+    id: str
+    need_id: str
+    camp_id: str
+    camp_name: str | None = None
+    district_code: str | None = None
+    item_key: str
+    label: str | None = None
+    unit: str
+    needed_qty: int
+    quantity: int
+    donor_name: str
+    donor_phone: str
+    phone_verified: bool
+    # None = pending (awaiting review), True = verified (counts), False = unverified.
+    admin_verified: bool | None = None
+    created_at: datetime
+
+
 class RequirementCounts(BaseModel):
     total: int
     by_camp: dict[str, int]
