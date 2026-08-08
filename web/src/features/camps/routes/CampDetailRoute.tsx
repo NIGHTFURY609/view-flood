@@ -17,7 +17,6 @@ import {
   PreDesignatedBadge,
   // StalenessNote,
   StatusBadge,
-  UrgencyBadge,
   VerificationBadge,
 } from "@/shared/components/badges";
 import { Button } from "@/shared/components/ui/button";
@@ -86,7 +85,6 @@ export function CampDetailRoute() {
         <div className="flex flex-wrap items-center gap-1.5">
           <VerificationBadge state={data.verification_state} full />
           {preDesignated ? <PreDesignatedBadge /> : <StatusBadge status={data.status} />}
-          <UrgencyBadge urgency={data.urgency} />
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -9,7 +9,6 @@ import { StepLocation } from "@/features/report/components/steps/StepLocation";
 import { StepOtp } from "@/features/report/components/steps/StepOtp";
 import { StepPhotos } from "@/features/report/components/steps/StepPhotos";
 import { StepReporter } from "@/features/report/components/steps/StepReporter";
-import { StepStatus } from "@/features/report/components/steps/StepStatus";
 import { useReportDraft } from "@/features/report/hooks/useReportDraft";
 import {
   MIN_PHOTOS,
@@ -17,7 +16,6 @@ import {
   stepCampSchema,
   stepLocationSchema,
   stepReporterSchema,
-  stepStatusSchema,
   type ReportDraft,
 } from "@/features/report/schema";
 import { api } from "@/shared/api/client";
@@ -35,7 +33,6 @@ const STEP_TITLES: readonly DictKey[] = [
   "report.step3",
   "report.step4",
   "report.step5",
-  "report.step6",
 ];
 
 /** Empty strings mean "not provided"; the API wants null. */
@@ -112,9 +109,9 @@ export function ReportRoute() {
         camp_incharge_name: orNull(draft.campInchargeName),
         camp_phone_primary: normalisePhone(draft.campPhonePrimary),
         camp_phone_secondary: normalisePhone(draft.campPhoneSecondary),
-        reported_status: draft.reportedStatus,
-        reported_urgency: draft.reportedUrgency,
-        reported_urgency_reason: orNull(draft.reportedUrgencyReason),
+        // The public form no longer asks whether a camp is open — every reported
+        // camp starts open. Admins flip a camp to closed from the camps panel.
+        reported_status: "active",
         reporter_name: draft.reporterName.trim(),
         reporter_phone_primary: e164,
         reporter_phone_secondary: normalisePhone(draft.reporterPhoneSecondary),
@@ -176,8 +173,7 @@ export function ReportRoute() {
 
     if (current === 1) return collect(stepLocationSchema.safeParse(draft));
     if (current === 2) return collect(stepCampSchema.safeParse(draft));
-    if (current === 3) return collect(stepStatusSchema.safeParse(draft));
-    if (current === 4) {
+    if (current === 3) {
       if (photos.length < MIN_PHOTOS) {
         setErrors({ photos: "error.minPhotos" });
         return false;
@@ -185,15 +181,15 @@ export function ReportRoute() {
       setErrors({});
       return true;
     }
-    if (current === 5) return collect(stepReporterSchema.safeParse(draft));
+    if (current === 4) return collect(stepReporterSchema.safeParse(draft));
     return true;
   }
 
   function next() {
     if (!validateStep(step)) return;
 
-    // Completing step 5 triggers the code, so step 6 opens ready to verify.
-    if (step === 5) requestOtp.mutate();
+    // Completing step 4 triggers the code, so step 5 opens ready to verify.
+    if (step === 4) requestOtp.mutate();
     setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   }
 
@@ -278,12 +274,11 @@ export function ReportRoute() {
       <div className="panel p-4">
         {step === 1 ? <StepLocation draft={draft} update={update} errors={errors} /> : null}
         {step === 2 ? <StepCampDetails draft={draft} update={update} errors={errors} /> : null}
-        {step === 3 ? <StepStatus draft={draft} update={update} errors={errors} /> : null}
-        {step === 4 ? (
+        {step === 3 ? (
           <StepPhotos photos={photos} onChange={setPhotos} error={errors["photos"]} />
         ) : null}
-        {step === 5 ? <StepReporter draft={draft} update={update} errors={errors} /> : null}
-        {step === 6 ? (
+        {step === 4 ? <StepReporter draft={draft} update={update} errors={errors} /> : null}
+        {step === 5 ? (
           <StepOtp
             phone={draft.reporterPhonePrimary}
             code={otpCode}

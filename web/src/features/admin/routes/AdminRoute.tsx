@@ -260,7 +260,7 @@ function QueuePanel({ token }: { token: string }) {
             <div>
               <dt className="text-muted-foreground">Reported</dt>
               <dd className="font-semibold text-foreground">
-                {item.reported_status === "active" ? "Open" : "Closed"} · {item.reported_urgency}
+                {item.reported_status === "active" ? "Open" : "Closed"}
               </dd>
             </div>
             <div>

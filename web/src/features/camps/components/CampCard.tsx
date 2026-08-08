@@ -6,7 +6,6 @@ import {
   PreDesignatedBadge,
   // StalenessNote,
   StatusBadge,
-  UrgencyBadge,
   VerificationBadge,
 } from "@/shared/components/badges";
 import { NeedChips } from "@/shared/components/NeedChips";
@@ -52,10 +51,6 @@ export function CampCard({ camp }: { camp: CampListItem }) {
         <div className="flex flex-wrap items-center gap-1.5">
           <VerificationBadge state={camp.verification_state} />
           {preDesignated ? <PreDesignatedBadge /> : <StatusBadge status={camp.status} />}
-          <UrgencyBadge
-            urgency={camp.urgency}
-            reportedOnly={camp.urgency === "normal" && camp.reported_urgency !== null}
-          />
           {camp.distance_km !== null ? (
             <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">
               {t("location.away", { km: formatDistanceKm(camp.distance_km) })}

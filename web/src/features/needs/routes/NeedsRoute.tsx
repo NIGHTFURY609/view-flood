@@ -142,7 +142,6 @@ export function NeedsRoute() {
             {items.map((need) => {
               const Icon = needIcon(need.item_key);
               const remaining = Math.max(0, need.needed_qty - need.pledged_qty);
-              const critical = need.urgency === "critical";
               const progress =
                 need.needed_qty > 0
                   ? Math.min(100, Math.round((need.pledged_qty / need.needed_qty) * 100))
@@ -157,9 +156,7 @@ export function NeedsRoute() {
                     <span
                       className={cn(
                         "grid size-9 shrink-0 place-items-center rounded-lg",
-                        critical
-                          ? "bg-critical-soft text-critical"
-                          : "bg-secondary text-secondary-foreground",
+                        "bg-secondary text-secondary-foreground",
                       )}
                     >
                       <Icon className="size-4" aria-hidden="true" />
@@ -193,9 +190,7 @@ export function NeedsRoute() {
                     <span
                       className={cn(
                         "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
-                        critical
-                          ? "bg-critical-soft text-critical"
-                          : "bg-secondary text-secondary-foreground",
+                        "bg-secondary text-secondary-foreground",
                       )}
                     >
                       {t("need.remaining", { count: remaining, unit: need.unit })}

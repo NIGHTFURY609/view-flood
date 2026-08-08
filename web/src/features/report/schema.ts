@@ -44,23 +44,6 @@ export const stepCampSchema = z.object({
   campPhoneSecondary: z.union([phone, z.literal("")]),
 });
 
-export const stepStatusSchema = z
-  .object({
-    reportedStatus: z.enum(["active", "inactive"]),
-    reportedUrgency: z.enum(["normal", "high", "critical"]),
-    reportedUrgencyReason: z.string().trim().max(500).optional(),
-  })
-  .superRefine((value, ctx) => {
-    // Raising an alarm requires saying why. Mirrors the server's model_validator.
-    if (value.reportedUrgency !== "normal" && (value.reportedUrgencyReason ?? "").length < 10) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["reportedUrgencyReason"],
-        message: "error.reason",
-      });
-    }
-  });
-
 export const stepReporterSchema = z.object({
   reporterName: z.string().trim().min(2, "error.required").max(120),
   reporterPhonePrimary: phone,
@@ -76,9 +59,6 @@ export const reportDraftSchema = stepLocationSchema
   .merge(stepReporterSchema)
   .merge(
     z.object({
-      reportedStatus: z.enum(["active", "inactive"]),
-      reportedUrgency: z.enum(["normal", "high", "critical"]),
-      reportedUrgencyReason: z.string().trim().max(500).optional(),
       campId: z.string().nullable(),
       isCorrection: z.boolean(),
       correctionNote: z.string().trim().max(1000).optional(),
@@ -104,9 +84,6 @@ export const EMPTY_DRAFT: ReportDraft = {
   campInchargeName: "",
   campPhonePrimary: "",
   campPhoneSecondary: "",
-  reportedStatus: "active",
-  reportedUrgency: "normal",
-  reportedUrgencyReason: "",
   reporterName: "",
   reporterPhonePrimary: "",
   reporterPhoneSecondary: "",
@@ -119,4 +96,4 @@ export const EMPTY_DRAFT: ReportDraft = {
 
 export const MIN_PHOTOS = 2;
 export const MAX_PHOTOS = 4;
-export const TOTAL_STEPS = 6;
+export const TOTAL_STEPS = 5;

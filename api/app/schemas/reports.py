@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 PHONE_PATTERN = r"^\+91[6-9]\d{9}$"
 
@@ -57,8 +57,6 @@ class ReportIn(BaseModel):
 
     # What the reporter observed
     reported_status: Literal["active", "inactive"]
-    reported_urgency: Literal["normal", "high", "critical"] = "normal"
-    reported_urgency_reason: str | None = Field(default=None, max_length=500)
 
     # Who is reporting. Never published.
     reporter_name: str = Field(min_length=2, max_length=120)
@@ -72,19 +70,6 @@ class ReportIn(BaseModel):
     otp_code: str | None = Field(default=None, pattern=r"^\d{6}$")
 
     images: list[ReportImageIn] = Field(min_length=2, max_length=4)
-
-    @model_validator(mode="after")
-    def urgency_needs_a_reason(self) -> ReportIn:
-        """Raising an alarm requires saying why.
-
-        This lived outside the prototype's zod schema as a hand-rolled check in
-        the handler, which meant the client and server could disagree about it.
-        """
-        if self.reported_urgency != "normal":
-            reason = (self.reported_urgency_reason or "").strip()
-            if len(reason) < 10:
-                raise ValueError("Give at least 10 characters explaining the urgency")
-        return self
 
 
 class ReportResult(BaseModel):

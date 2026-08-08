@@ -24,12 +24,12 @@ EARTH_RADIUS_KM = 6371.0
 # Columns the public list view needs. Explicit, never SELECT *.
 LIST_COLUMNS = (
     "id,name,name_ml,district_code,taluk,lsg_name,village_or_locality,"
-    "latitude,longitude,status,verification_state,urgency,reported_urgency,"
+    "latitude,longitude,status,verification_state,"
     "camp_phone_primary,report_count,status_last_confirmed_at,updated_at"
 )
 
 NEED_COLUMNS = (
-    "id,camp_id,item_key,label,unit,needed_qty,pledged_qty,urgency,note,updated_at"
+    "id,camp_id,item_key,label,unit,needed_qty,pledged_qty,note,updated_at"
 )
 
 DETAIL_COLUMNS = (
@@ -79,7 +79,7 @@ class CampsService:
         q: str | None = None,
         lat: float | None = None,
         lng: float | None = None,
-        sort: str = "urgency",
+        sort: str = "recent",
         offset: int = 0,
         limit: int = 24,
     ) -> tuple[list[CampListItem], int | None]:
@@ -119,11 +119,7 @@ class CampsService:
                 "camps", params=params, offset=0, limit=500, want_count=True
             )
         else:
-            params["order"] = (
-                "urgency.desc,status_last_confirmed_at.desc.nullslast"
-                if sort == "urgency"
-                else "updated_at.desc"
-            )
+            params["order"] = "updated_at.desc"
             rows, total = await self._rest.select(
                 "camps", params=params, offset=offset, limit=limit, want_count=True
             )
@@ -152,9 +148,9 @@ class CampsService:
         rows, _ = await self._rest.select(
             "camp_needs",
             params={
-                "select": "camp_id,item_key,urgency",
+                "select": "camp_id,item_key",
                 "camp_id": f"in.({ids})",
-                "order": "urgency.desc",
+                "order": "updated_at.desc",
             },
             limit=len(items) * 8,
         )
@@ -163,7 +159,7 @@ class CampsService:
         for row in rows:
             bucket = by_camp.setdefault(row["camp_id"], [])
             if len(bucket) < 5:
-                bucket.append(CampNeedSummary(item_key=row["item_key"], urgency=row["urgency"]))
+                bucket.append(CampNeedSummary(item_key=row["item_key"]))
 
         for item in items:
             item.top_needs = by_camp.get(item.id, [])
@@ -206,7 +202,7 @@ class CampsService:
             params={
                 "select": NEED_COLUMNS,
                 "camp_id": f"eq.{camp_id}",
-                "order": "urgency.desc,item_key.asc",
+                "order": "item_key.asc",
             },
             limit=50,
         )
@@ -222,7 +218,7 @@ class CampsService:
     ) -> tuple[list[CampNeed], int | None]:
         params: dict[str, Any] = {
             "select": NEED_COLUMNS,
-            "order": "urgency.desc,updated_at.desc",
+            "order": "updated_at.desc",
         }
         if item_key:
             params["item_key"] = f"eq.{item_key}"
