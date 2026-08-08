@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { useI18n } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
 
+
 export interface MapPoint {
   readonly id: string;
   readonly name: string;

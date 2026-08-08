@@ -15,7 +15,7 @@ import { EmptyState, ErrorState } from "@/shared/components/states";
 import {
   isPreDesignated,
   PreDesignatedBadge,
-  StalenessNote,
+  // StalenessNote,
   StatusBadge,
   UrgencyBadge,
   VerificationBadge,
@@ -96,7 +96,7 @@ export function CampDetailRoute() {
               ? formatIst(data.status_last_confirmed_at)
               : t("detail.neverConfirmed")}
           </span>
-          <StalenessNote lastConfirmedAt={data.status_last_confirmed_at} />
+          {/* <StalenessNote lastConfirmedAt={data.status_last_confirmed_at} /> */}
         </div>
       </header>
 

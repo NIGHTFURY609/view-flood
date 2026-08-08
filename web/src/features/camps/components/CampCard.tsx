@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import {
   isPreDesignated,
   PreDesignatedBadge,
-  StalenessNote,
+  // StalenessNote,
   StatusBadge,
   UrgencyBadge,
   VerificationBadge,
@@ -71,7 +71,7 @@ export function CampCard({ camp }: { camp: CampListItem }) {
               ? t("detail.reportedAt", { time: formatIst(camp.status_last_confirmed_at) })
               : t("detail.neverConfirmed")}
           </span>
-          <StalenessNote lastConfirmedAt={camp.status_last_confirmed_at} />
+          {/* <StalenessNote lastConfirmedAt={camp.status_last_confirmed_at} /> */}
         </div>
       </Link>
 
