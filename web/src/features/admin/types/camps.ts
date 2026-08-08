@@ -29,8 +29,6 @@ export interface AdminReport {
   reporter_phone_secondary: string | null;
   reporter_relationship: string | null;
   reported_status: string | null;
-  reported_urgency: string | null;
-  reported_urgency_reason: string | null;
   auto_flags: string[];
   phone_unverified: boolean;
   submitted_at: string;

@@ -5,7 +5,6 @@ import {
   isPreDesignated,
   PreDesignatedBadge,
   StatusBadge,
-  UrgencyBadge,
   VerificationBadge,
 } from "@/shared/components/badges";
 import { useI18n } from "@/shared/i18n";
@@ -30,7 +29,6 @@ export function CampRow({ camp }: { camp: CampListItem }) {
           <h2 className="truncate text-sm font-bold text-foreground">{camp.name}</h2>
           <VerificationBadge state={camp.verification_state} />
           {isPreDesignated(camp) ? <PreDesignatedBadge /> : <StatusBadge status={camp.status} />}
-          <UrgencyBadge urgency={camp.urgency} />
         </div>
 
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">

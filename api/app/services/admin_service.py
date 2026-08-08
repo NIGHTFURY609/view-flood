@@ -23,7 +23,7 @@ VerificationMethod = Literal[
 
 CAMP_SNAPSHOT_COLUMNS = (
     "id, name, district_code, taluk, lsg_name, status, verification_state, "
-    "urgency, duplicate_of, report_count, verified_at, verified_by, verification_note"
+    "duplicate_of, report_count, verified_at, verified_by, verification_note"
 )
 
 
@@ -58,7 +58,7 @@ class AdminService:
         rows = await connection.fetch(
             f"""
             SELECT r.id, r.reference_code, r.camp_id, r.is_correction, r.reporter_name,
-                   r.reporter_phone_primary, r.reported_status, r.reported_urgency,
+                   r.reporter_phone_primary, r.reported_status,
                    r.auto_flags, r.submitted_at,
                    c.name AS camp_name, c.district_code, c.taluk, c.lsg_name,
                    c.verification_state
@@ -87,7 +87,6 @@ class AdminService:
                 "reporter_name": row["reporter_name"],
                 "reporter_phone": row["reporter_phone_primary"],
                 "reported_status": row["reported_status"],
-                "reported_urgency": row["reported_urgency"],
                 "auto_flags": row["auto_flags"] or [],
                 "submitted_at": row["submitted_at"],
                 "verification_state": row["verification_state"],

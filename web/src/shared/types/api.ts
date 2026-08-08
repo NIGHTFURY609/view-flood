@@ -14,7 +14,6 @@ export type VerificationState =
   | "removed";
 
 export type CampStatus = "active" | "inactive";
-export type UrgencyLevel = "normal" | "high" | "critical";
 export type LsgType = "panchayat" | "municipality" | "corporation";
 
 export type BuildingType =
@@ -71,8 +70,6 @@ export interface CampListItem {
   readonly longitude: number | null;
   readonly status: CampStatus;
   readonly verification_state: VerificationState;
-  readonly urgency: UrgencyLevel;
-  readonly reported_urgency: UrgencyLevel | null;
   readonly camp_phone_primary: string | null;
   readonly report_count: number;
   readonly status_last_confirmed_at: string | null;
@@ -115,7 +112,6 @@ export interface SignedImage {
 
 export interface CampNeedSummary {
   readonly item_key: string;
-  readonly urgency: UrgencyLevel;
   /** Set only for approved free-text requirements, whose key has no dictionary entry. */
   readonly label: string | null;
 }
@@ -129,7 +125,6 @@ export interface CampNeed {
   readonly unit: string;
   readonly needed_qty: number;
   readonly pledged_qty: number;
-  readonly urgency: UrgencyLevel;
   readonly note: string | null;
   readonly updated_at: string;
 }
@@ -192,8 +187,6 @@ export interface ReportSubmission {
   readonly camp_phone_primary: string | null;
   readonly camp_phone_secondary: string | null;
   readonly reported_status: CampStatus;
-  readonly reported_urgency: UrgencyLevel;
-  readonly reported_urgency_reason: string | null;
   readonly reporter_name: string;
   readonly reporter_phone_primary: string;
   readonly reporter_phone_secondary: string | null;
@@ -233,7 +226,6 @@ export interface AdminQueueItem {
   readonly reporter_name: string;
   readonly reporter_phone: string;
   readonly reported_status: CampStatus;
-  readonly reported_urgency: UrgencyLevel;
   readonly auto_flags: readonly string[];
   readonly submitted_at: string;
   readonly verification_state: VerificationState;

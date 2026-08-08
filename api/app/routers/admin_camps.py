@@ -70,8 +70,6 @@ class AdminReport(BaseModel):
     reporter_phone_secondary: str | None = None
     reporter_relationship: str | None = None
     reported_status: str | None = None
-    reported_urgency: str | None = None
-    reported_urgency_reason: str | None = None
     auto_flags: list[str] = []
     phone_unverified: bool = False
     submitted_at: datetime

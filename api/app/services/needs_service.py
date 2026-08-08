@@ -36,12 +36,25 @@ class NeedsService:
         payload: PledgeIn,
         ip_hash: str,
     ) -> PledgeResult:
+        # FOR UPDATE serialises concurrent pledges against this need: the lock is
+        # held until commit, so a second pledge reads the trigger-bumped
+        # pledged_qty and cannot slip past the remaining-quantity check below.
         need = await connection.fetchrow(
-            "SELECT id, camp_id, needed_qty, pledged_qty FROM camp_needs WHERE id = $1",
+            "SELECT id, camp_id, needed_qty, pledged_qty FROM camp_needs WHERE id = $1 FOR UPDATE",
             need_id,
         )
         if need is None:
             return PledgeResult(ok=False, reason="not_found")
+
+        # A pledge can never take a camp past what it asked for.
+        remaining = need["needed_qty"] - need["pledged_qty"]
+        if payload.quantity > remaining:
+            return PledgeResult(
+                ok=False,
+                reason="exceeds_remaining",
+                pledged_qty=need["pledged_qty"],
+                needed_qty=need["needed_qty"],
+            )
 
         verified = False
         if payload.challenge_id and payload.otp_code:

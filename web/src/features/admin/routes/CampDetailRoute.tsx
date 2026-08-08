@@ -22,8 +22,12 @@ import {
   rejectAdminCamp,
   updateAdminCamp,
 } from "@/features/admin/api/adminCamps";
-import { adminCampRequirementsQuery } from "@/features/admin/api/adminRequirements";
+import {
+  adminCampRequirementsQuery,
+  adminNeedsQuery,
+} from "@/features/admin/api/adminRequirements";
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog";
+import { NeedDonationRow } from "@/features/admin/components/NeedDonationRow";
 import { RequirementCard } from "@/features/admin/components/RequirementCard";
 import { districtsQuery, lsgQuery, taluksQuery } from "@/features/camps/api";
 import { Button } from "@/shared/components/ui/button";
@@ -44,7 +48,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { AdminReport, AdminRequirement, CampUpdatePayload } from "@/features/admin/types";
+import type {
+  AdminNeed,
+  AdminReport,
+  AdminRequirement,
+  CampUpdatePayload,
+} from "@/features/admin/types";
 import { cn } from "@/shared/lib/cn";
 import type { CampDetail, VerificationState } from "@/shared/types/api";
 
@@ -89,6 +98,7 @@ export function CampDetailRoute() {
   const images = useQuery(adminCampImagesQuery(campId));
   const reports = useQuery(adminCampReportsQuery(campId));
   const requirements = useQuery(adminCampRequirementsQuery(campId));
+  const campNeeds = useQuery(adminNeedsQuery({ camp_id: campId, limit: 100 }));
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FormState | null>(null);
@@ -267,6 +277,11 @@ export function CampDetailRoute() {
                   loading={requirements.isPending}
                 />
 
+                <DonationsCard
+                  needs={campNeeds.data?.items ?? []}
+                  loading={campNeeds.isPending}
+                />
+
                 <div className="rounded-xl border border-[#f85149]/40 bg-[#f85149]/5 p-5">
                   <h3 className="text-sm font-semibold text-[#f85149]">Danger zone</h3>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -340,8 +355,7 @@ function ViewSections({ camp, districtName }: { camp: CampDetail; districtName: 
   return (
     <>
       <Section title="Overview">
-        <Info label="Status" value={camp.status} className="capitalize" />
-        <Info label="Urgency" value={camp.urgency} className="capitalize" />
+        <Info label="Camp status" value={camp.status === "active" ? "Open" : "Closed"} />
         <Info label="Verification" value={camp.verification_state.replace("_", " ")} className="capitalize" />
         <Info label="Verified at" value={fmtDate(camp.verified_at)} />
         <Info label="Last updated" value={fmtDate(camp.updated_at)} />
@@ -474,6 +488,29 @@ function RequirementsCard({
   );
 }
 
+function DonationsCard({ needs, loading }: { needs: readonly AdminNeed[]; loading: boolean }) {
+  if (!loading && needs.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Donations</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <div className="m-5 h-16 animate-pulse rounded-lg bg-secondary" />
+        ) : (
+          <ul className="divide-y divide-border/60">
+            {needs.map((need) => (
+              <NeedDonationRow key={need.id} need={need} showCamp={false} />
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function ReportsCard({
   reports,
   loading,
@@ -507,7 +544,6 @@ function ReportsCard({
               <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 {r.reporter_phone_primary && <span className="tabular-nums">{r.reporter_phone_primary}</span>}
                 <span className="capitalize">status: {r.reported_status ?? "—"}</span>
-                <span className="capitalize">urgency: {r.reported_urgency ?? "—"}</span>
                 <span className="rounded bg-secondary px-1.5 py-0.5 font-mono">{r.reference_code}</span>
                 {r.phone_unverified && (
                   <span className="rounded bg-[#d29922]/15 px-1.5 py-0.5 text-[#d29922]">phone unverified</span>
@@ -570,14 +606,14 @@ function EditForm({
           <Field label="Malayalam Name">
             <Input value={form.name_ml} onChange={(e) => set("name_ml", e.target.value)} />
           </Field>
-          <Field label="Status">
+          <Field label="Camp status (open / closed)">
             <Select value={form.status} onValueChange={(v) => set("status", v as FormState["status"])}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="active">Open</SelectItem>
+                <SelectItem value="inactive">Closed</SelectItem>
               </SelectContent>
             </Select>
           </Field>

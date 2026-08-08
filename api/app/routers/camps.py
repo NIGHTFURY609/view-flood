@@ -33,7 +33,7 @@ async def list_camps(
     q: str | None = None,
     lat: float | None = Query(default=None, ge=-90, le=90),
     lng: float | None = Query(default=None, ge=-180, le=180),
-    sort: str = "urgency",
+    sort: str = "recent",
     cursor: str = "",
     limit: int = Query(default=24, ge=1, le=100),
 ) -> Page[CampListItem]:

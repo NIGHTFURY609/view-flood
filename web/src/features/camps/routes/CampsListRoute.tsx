@@ -45,7 +45,7 @@ export function CampsListRoute() {
       status: values.status,
       limit: PAGE_SIZE,
       cursor: values.page > 1 ? String((values.page - 1) * PAGE_SIZE) : "",
-      sort: coords ? "distance" : "urgency",
+      sort: coords ? "distance" : "recent",
     };
     return {
       ...base,

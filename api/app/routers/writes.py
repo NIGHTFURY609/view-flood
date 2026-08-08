@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
-from app.core.errors import NotFoundError, OtpError, RateLimitedError
+from app.core.errors import ConflictError, NotFoundError, OtpError, RateLimitedError
 from app.core.ip import client_ip, hash_ip
 from app.deps import (
     DatabaseDep,
@@ -100,6 +100,14 @@ async def create_pledge(
 
     if not result.ok and result.reason == "not_found":
         raise NotFoundError("That requirement no longer exists")
+    if not result.ok and result.reason == "exceeds_remaining":
+        remaining = max(0, result.needed_qty - result.pledged_qty)
+        raise ConflictError(
+            f"Only {remaining} still needed — please lower the amount."
+            if remaining
+            else "This item is already fully pledged.",
+            code="exceeds_remaining",
+        )
     if not result.ok:
         raise OtpError(
             "That verification code is not correct or has expired",

@@ -29,7 +29,7 @@ AUDIT_SNAPSHOT_COLUMNS = (
 # data-exposure boundary and it should be obvious what crosses it.
 LIST_COLUMNS = """
     id, name, name_ml, district_code, taluk, lsg_name, village_or_locality,
-    latitude, longitude, status, verification_state, urgency, reported_urgency,
+    latitude, longitude, status, verification_state,
     camp_phone_primary, report_count,
     status_last_confirmed_at, updated_at
 """
@@ -44,7 +44,7 @@ DETAIL_COLUMNS = (
 )
 
 NEED_COLUMNS = """
-    id, camp_id, item_key, label, unit, needed_qty, pledged_qty, urgency, note, updated_at
+    id, camp_id, item_key, label, unit, needed_qty, pledged_qty, note, updated_at
 """
 
 PUBLIC_STATES = ("unverified", "verified")
@@ -104,7 +104,7 @@ class CampsSqlService:
         q: str | None = None,
         lat: float | None = None,
         lng: float | None = None,
-        sort: str = "urgency",
+        sort: str = "recent",
         offset: int = 0,
         limit: int = 24,
     ) -> tuple[list[CampListItem], int | None]:
@@ -173,11 +173,7 @@ class CampsSqlService:
                     for row in rows
                 ]
             else:
-                order = (
-                    "urgency DESC, status_last_confirmed_at DESC NULLS LAST"
-                    if sort == "urgency"
-                    else "updated_at DESC"
-                )
+                order = "updated_at DESC"
                 args.extend([limit, offset])
                 rows = await connection.fetch(
                     f"""
@@ -283,10 +279,10 @@ class CampsSqlService:
 
         rows = await connection.fetch(
             """
-            SELECT camp_id, item_key, urgency, label
+            SELECT camp_id, item_key, label
             FROM (
-                SELECT camp_id, item_key, urgency, label,
-                       row_number() OVER (PARTITION BY camp_id ORDER BY urgency DESC) AS rn
+                SELECT camp_id, item_key, label,
+                       row_number() OVER (PARTITION BY camp_id ORDER BY updated_at DESC) AS rn
                 FROM camp_needs
                 WHERE camp_id = ANY($1::uuid[])
             ) ranked
@@ -298,9 +294,7 @@ class CampsSqlService:
         by_camp: dict[str, list[CampNeedSummary]] = {}
         for row in rows:
             by_camp.setdefault(str(row["camp_id"]), []).append(
-                CampNeedSummary(
-                    item_key=row["item_key"], urgency=row["urgency"], label=row["label"]
-                )
+                CampNeedSummary(item_key=row["item_key"], label=row["label"])
             )
 
         for item in items:
@@ -428,8 +422,7 @@ class CampsSqlService:
             """
             SELECT reference_code, reporter_name, reporter_phone_primary,
                    reporter_phone_secondary, reporter_relationship, reported_status,
-                   reported_urgency, reported_urgency_reason, auto_flags,
-                   phone_unverified, submitted_at
+                   auto_flags, phone_unverified, submitted_at
             FROM reports
             WHERE camp_id = $1::uuid
             ORDER BY submitted_at DESC
@@ -494,7 +487,7 @@ class CampsSqlService:
             SELECT {NEED_COLUMNS}
             FROM camp_needs
             WHERE camp_id = $1::uuid
-            ORDER BY urgency DESC, item_key ASC
+            ORDER BY item_key ASC
             """,
             camp_id,
         )
@@ -535,7 +528,7 @@ class CampsSqlService:
                 SELECT {NEED_COLUMNS}
                 FROM camp_needs
                 WHERE {clause}
-                ORDER BY urgency DESC, updated_at DESC
+                ORDER BY updated_at DESC
                 LIMIT ${len(args) - 1} OFFSET ${len(args)}
                 """,
                 *args,

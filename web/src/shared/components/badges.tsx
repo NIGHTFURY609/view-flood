@@ -1,5 +1,4 @@
 import {
-  AlertTriangle,
   CheckCircle2,
   CircleAlert,
   Landmark,
@@ -9,7 +8,7 @@ import type { ReactNode } from "react";
 import { useI18n } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
 import { stalenessOf } from "@/shared/lib/format";
-import type { CampStatus, UrgencyLevel, VerificationState } from "@/shared/types/api";
+import type { CampStatus, VerificationState } from "@/shared/types/api";
 
 /**
  * The trust vocabulary. Every badge pairs colour with an icon AND a text label,
@@ -101,29 +100,6 @@ export function PreDesignatedBadge() {
     <Pill className="bg-secondary text-secondary-foreground">
       <Landmark className="size-3.5" aria-hidden="true" />
       {t("state.predesignated")}
-    </Pill>
-  );
-}
-
-export function UrgencyBadge({
-  urgency,
-  reportedOnly = false,
-}: {
-  urgency: UrgencyLevel;
-  reportedOnly?: boolean;
-}) {
-  const { t } = useI18n();
-  if (urgency === "normal") return null;
-
-  const critical = urgency === "critical";
-
-  return (
-    <Pill className={critical ? "bg-critical-soft text-critical" : "bg-high-soft text-high"}>
-      <AlertTriangle className="size-3.5" aria-hidden="true" />
-      {critical ? t("urgency.critical") : t("urgency.high")}
-      {reportedOnly ? (
-        <span className="font-normal opacity-85">· {t("urgency.reported")}</span>
-      ) : null}
     </Pill>
   );
 }

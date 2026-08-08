@@ -139,11 +139,11 @@ class ReportService:
                         name, name_ml, building_type, district_code, taluk, lsg_type, lsg_name,
                         village_or_locality, landmark, latitude, longitude, location_accuracy_m,
                         camp_incharge_name, camp_phone_primary, camp_phone_secondary,
-                        verification_state, status, reported_urgency, reported_urgency_reason,
+                        verification_state, status,
                         status_last_confirmed_at, report_count
                     )
                     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-                            'unverified', $16, $17, $18, now(), 1)
+                            'unverified', $16, now(), 1)
                     RETURNING id
                     """,
                     payload.name,
@@ -162,8 +162,6 @@ class ReportService:
                     payload.camp_phone_primary,
                     payload.camp_phone_secondary,
                     payload.reported_status,
-                    payload.reported_urgency,
-                    payload.reported_urgency_reason,
                 )
             )
 
@@ -192,12 +190,12 @@ class ReportService:
                     reporter_name, reporter_phone_primary, reporter_phone_secondary,
                     reporter_gender, reporter_relationship, phone_verified_at, phone_unverified,
                     submitted_lat, submitted_lng, device_location_granted,
-                    reported_status, reported_urgency, reported_urgency_reason,
+                    reported_status,
                     payload, auto_flags, ip_hash
                 )
                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,
                         CASE WHEN $10 THEN NULL ELSE now() END, $10,
-                        $11,$12,$13,$14,$15,$16,$17::jsonb,$18::jsonb,$19)
+                        $11,$12,$13,$14,$15::jsonb,$16::jsonb,$17)
                 RETURNING id
                 """,
                 reference,
@@ -214,8 +212,6 @@ class ReportService:
                 payload.longitude,
                 payload.device_location_granted,
                 payload.reported_status,
-                payload.reported_urgency,
-                payload.reported_urgency_reason,
                 json.dumps(
                     {"landmark": payload.landmark, "village": payload.village_or_locality}
                 ),

@@ -21,15 +21,12 @@ export function NeedChips({
     <ul aria-label={t("need.title")} className="flex flex-wrap items-center gap-1">
       {shown.map((need) => {
         const Icon = needIcon(need.item_key);
-        const critical = need.urgency === "critical";
         return (
           <li key={need.item_key}>
             <span
               className={cn(
                 "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium",
-                critical
-                  ? "bg-critical-soft text-critical"
-                  : "bg-secondary text-secondary-foreground",
+                "bg-secondary text-secondary-foreground",
               )}
             >
               <Icon className="size-3.5" aria-hidden="true" />

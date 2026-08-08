@@ -3,6 +3,8 @@ import {
   ChevronDown,
   ChevronRight,
   Flag,
+  HandHeart,
+  Inbox,
   LayoutDashboard,
   ListChecks,
   LogOut,
@@ -48,6 +50,9 @@ function CountBubble({ count }: { count: number }) {
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const [campsOpen, setCampsOpen] = useState(() => location.pathname.startsWith("/admin/camps"));
+  const [reqOpen, setReqOpen] = useState(() =>
+    location.pathname.startsWith("/admin/requirements"),
+  );
   const counts = useQuery(adminRequirementCountsQuery());
 
   return (
@@ -97,10 +102,47 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 <Flag className="size-4" aria-hidden="true" />
                 Reported Camps
               </NavLink>
-              <NavLink to="/admin/camps/requirements" className={linkClass} onClick={onNavigate}>
-                <PackagePlus className="size-4" aria-hidden="true" />
-                Requirements
+            </div>
+          )}
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setReqOpen((v) => !v)}
+            aria-expanded={reqOpen}
+            className={cn(
+              "flex w-full items-center justify-between rounded-lg px-3 py-2",
+              "text-sm font-semibold text-foreground",
+              "transition-colors duration-(--duration-fast) hover:bg-secondary",
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <PackagePlus className="size-4" aria-hidden="true" />
+              Requirements
+              {!reqOpen ? <CountBubble count={counts.data?.total ?? 0} /> : null}
+            </span>
+            {reqOpen ? (
+              <ChevronDown className="size-4" aria-hidden="true" />
+            ) : (
+              <ChevronRight className="size-4" aria-hidden="true" />
+            )}
+          </button>
+
+          {reqOpen && (
+            <div className="mt-1 space-y-1 pl-3">
+              <NavLink to="/admin/requirements" end className={linkClass} onClick={onNavigate}>
+                <Inbox className="size-4" aria-hidden="true" />
+                Requests
                 <CountBubble count={counts.data?.total ?? 0} />
+              </NavLink>
+              <NavLink
+                to="/admin/requirements/donations"
+                className={linkClass}
+                onClick={onNavigate}
+              >
+                <HandHeart className="size-4" aria-hidden="true" />
+                Donations
               </NavLink>
             </div>
           )}

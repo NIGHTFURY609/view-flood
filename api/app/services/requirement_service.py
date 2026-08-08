@@ -200,6 +200,26 @@ class RequirementService:
         )
         return await self._attach_items(connection, rows)
 
+    async def get_one(
+        self, connection: asyncpg.Connection, requirement_id: str
+    ) -> dict[str, Any] | None:
+        """A single request with its line items — backs the admin detail page."""
+        row = await connection.fetchrow(
+            """
+            SELECT r.id, r.camp_id, c.name AS camp_name, r.submitter_name,
+                   r.submitter_phone, r.note, r.status, r.reviewed_at,
+                   r.review_note, r.created_at
+            FROM camp_requirements r
+            JOIN camps c ON c.id = r.camp_id
+            WHERE r.id = $1::uuid
+            """,
+            requirement_id,
+        )
+        if row is None:
+            return None
+        rows = await self._attach_items(connection, [row])
+        return rows[0]
+
     async def _attach_items(
         self, connection: asyncpg.Connection, rows: list[asyncpg.Record]
     ) -> list[dict[str, Any]]:
@@ -223,6 +243,234 @@ class RequirementService:
             if parent is not None:
                 parent["items"].append({**dict(item), "id": str(item["id"])})
         return out
+
+    async def list_needs_for_admin(
+        self,
+        connection: asyncpg.Connection,
+        *,
+        district_code: str | None = None,
+        item_key: str | None = None,
+        camp_id: str | None = None,
+        q: str | None = None,
+        offset: int = 0,
+        limit: int = 25,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Approved needs (camp_needs) across camps, with a live donation tally."""
+        where: list[str] = ["TRUE"]
+        args: list[Any] = []
+
+        def add(clause: str, value: Any) -> None:
+            args.append(value)
+            where.append(clause.format(n=len(args)))
+
+        if district_code:
+            add("c.district_code = ${n}", district_code)
+        if item_key:
+            add("n.item_key = ${n}", item_key)
+        if camp_id:
+            add("n.camp_id = ${n}::uuid", camp_id)
+        if q:
+            add("(c.name ILIKE '%' || ${n} || '%' OR n.label ILIKE '%' || ${n} || '%')", q)
+
+        clause = " AND ".join(where)
+
+        total = await connection.fetchval(
+            f"""
+            SELECT count(*) FROM camp_needs n
+            JOIN camps c ON c.id = n.camp_id
+            WHERE {clause}
+            """,
+            *args,
+        )
+
+        rows = await connection.fetch(
+            f"""
+            SELECT n.id, n.camp_id, c.name AS camp_name, c.district_code,
+                   n.item_key, n.label, n.unit, n.needed_qty, n.pledged_qty,
+                   n.updated_at,
+                   (SELECT count(*) FROM need_pledges p WHERE p.need_id = n.id) AS pledge_count
+            FROM camp_needs n
+            JOIN camps c ON c.id = n.camp_id
+            WHERE {clause}
+            ORDER BY n.updated_at DESC, n.id DESC
+            LIMIT ${len(args) + 1} OFFSET ${len(args) + 2}
+            """,
+            *args,
+            limit,
+            offset,
+        )
+
+        out = []
+        for row in rows:
+            record = dict(row)
+            record["id"] = str(record["id"])
+            record["camp_id"] = str(record["camp_id"])
+            record["pledge_count"] = int(record["pledge_count"] or 0)
+            out.append(record)
+        return out, (total or 0)
+
+    _PLEDGE_ROW = """
+        SELECT p.id, p.need_id, n.camp_id, c.name AS camp_name, c.district_code,
+               n.item_key, n.label, n.unit, n.needed_qty, p.quantity,
+               p.donor_name, p.donor_phone, p.phone_verified, p.admin_verified,
+               p.created_at
+        FROM need_pledges p
+        JOIN camp_needs n ON n.id = p.need_id
+        JOIN camps c ON c.id = n.camp_id
+    """
+
+    @staticmethod
+    def _pledge_dict(row: asyncpg.Record) -> dict[str, Any]:
+        record = dict(row)
+        record["id"] = str(record["id"])
+        record["need_id"] = str(record["need_id"])
+        record["camp_id"] = str(record["camp_id"])
+        return record
+
+    async def list_pledges_for_admin(
+        self,
+        connection: asyncpg.Connection,
+        *,
+        district_code: str | None = None,
+        item_key: str | None = None,
+        verified: str | None = None,
+        q: str | None = None,
+        offset: int = 0,
+        limit: int = 25,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Individual donations across camps — the Donations approval list."""
+        where: list[str] = ["TRUE"]
+        args: list[Any] = []
+
+        def add(clause: str, value: Any) -> None:
+            args.append(value)
+            where.append(clause.format(n=len(args)))
+
+        if district_code:
+            add("c.district_code = ${n}", district_code)
+        if item_key:
+            add("n.item_key = ${n}", item_key)
+        if verified == "verified":
+            where.append("p.admin_verified IS TRUE")
+        elif verified == "unverified":
+            where.append("p.admin_verified IS FALSE")
+        elif verified == "pending":
+            where.append("p.admin_verified IS NULL")
+        if q:
+            add(
+                "(c.name ILIKE '%' || ${n} || '%' OR p.donor_name ILIKE '%' || ${n} || '%' "
+                "OR p.donor_phone ILIKE '%' || ${n} || '%')",
+                q,
+            )
+
+        clause = " AND ".join(where)
+
+        total = await connection.fetchval(
+            f"""
+            SELECT count(*) FROM need_pledges p
+            JOIN camp_needs n ON n.id = p.need_id
+            JOIN camps c ON c.id = n.camp_id
+            WHERE {clause}
+            """,
+            *args,
+        )
+
+        rows = await connection.fetch(
+            f"""
+            {self._PLEDGE_ROW}
+            WHERE {clause}
+            ORDER BY p.created_at DESC, p.id DESC
+            LIMIT ${len(args) + 1} OFFSET ${len(args) + 2}
+            """,
+            *args,
+            limit,
+            offset,
+        )
+        return [self._pledge_dict(r) for r in rows], (total or 0)
+
+    async def get_pledge(
+        self, connection: asyncpg.Connection, pledge_id: str
+    ) -> dict[str, Any] | None:
+        """A single donation with its need/camp context — the detail page."""
+        row = await connection.fetchrow(
+            f"{self._PLEDGE_ROW} WHERE p.id = $1::uuid", pledge_id
+        )
+        return self._pledge_dict(row) if row is not None else None
+
+    async def set_pledge_verified(
+        self,
+        connection: asyncpg.Connection,
+        *,
+        pledge_id: str,
+        admin_id: str,
+        verified: bool,
+    ) -> dict[str, Any]:
+        """Flip a pledge's admin verification; a DB trigger recomputes the need's
+        pledged total. Verifying can never take a camp past what it needs."""
+        pledge = await connection.fetchrow(
+            "SELECT id, need_id, quantity, admin_verified FROM need_pledges "
+            "WHERE id = $1::uuid FOR UPDATE",
+            pledge_id,
+        )
+        if pledge is None:
+            raise NotFoundError("That donation no longer exists")
+
+        # Cap only bites when a pledge is *becoming* verified (from pending or
+        # unverified); re-affirming an already-verified pledge is a no-op.
+        if verified and pledge["admin_verified"] is not True:
+            need = await connection.fetchrow(
+                "SELECT needed_qty, pledged_qty FROM camp_needs WHERE id = $1 FOR UPDATE",
+                pledge["need_id"],
+            )
+            remaining = need["needed_qty"] - need["pledged_qty"]
+            if pledge["quantity"] > remaining:
+                raise ConflictError(
+                    f"Only {max(0, remaining)} still needed — cannot verify {pledge['quantity']}.",
+                    code="exceeds_remaining",
+                )
+
+        await connection.execute(
+            """
+            UPDATE need_pledges
+               SET admin_verified = $2,
+                   verified_at = CASE WHEN $2 THEN now() ELSE NULL END,
+                   verified_by = CASE WHEN $2 THEN $3::uuid ELSE NULL END
+             WHERE id = $1::uuid
+            """,
+            pledge_id,
+            verified,
+            admin_id,
+        )
+        await write_audit(
+            connection,
+            actor_type="admin",
+            actor_id=admin_id,
+            action="pledge_verified" if verified else "pledge_unverified",
+            entity_type="need_pledge",
+            entity_id=pledge_id,
+            before={"admin_verified": pledge["admin_verified"]},
+            after={"admin_verified": verified},
+        )
+
+        row = await connection.fetchrow(
+            f"{self._PLEDGE_ROW} WHERE p.id = $1::uuid", pledge_id
+        )
+        return self._pledge_dict(row)
+
+    async def pledges_for_need(
+        self, connection: asyncpg.Connection, need_id: str
+    ) -> list[dict[str, Any]]:
+        """Individual donations for a need, newest first. Carries donor PII."""
+        rows = await connection.fetch(
+            """
+            SELECT id, donor_name, donor_phone, quantity, phone_verified, created_at
+            FROM need_pledges
+            WHERE need_id = $1::uuid
+            ORDER BY created_at DESC
+            """,
+            need_id,
+        )
+        return [{**dict(row), "id": str(row["id"])} for row in rows]
 
     async def pending_counts(self, connection: asyncpg.Connection) -> tuple[int, dict[str, int]]:
         rows = await connection.fetch(

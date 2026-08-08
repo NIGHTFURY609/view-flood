@@ -15,7 +15,6 @@ from pydantic import BaseModel
 
 VerificationState = Literal["unverified", "verified", "duplicate_held", "rejected", "removed"]
 CampStatus = Literal["active", "inactive"]
-UrgencyLevel = Literal["normal", "high", "critical"]
 LsgType = Literal["panchayat", "municipality", "corporation"]
 BuildingType = Literal[
     "school", "college", "community_hall", "place_of_worship", "government_building", "other"
@@ -27,7 +26,6 @@ PUBLIC_VERIFICATION_STATES: tuple[str, ...] = ("unverified", "verified")
 
 class CampNeedSummary(BaseModel):
     item_key: str
-    urgency: UrgencyLevel
     # Only meaningful for approved free-text requirements (other_<slug>), whose
     # key has no dictionary entry on the client.
     label: str | None = None
@@ -45,8 +43,6 @@ class CampListItem(BaseModel):
     longitude: float | None = None
     status: CampStatus
     verification_state: VerificationState
-    urgency: UrgencyLevel
-    reported_urgency: UrgencyLevel | None = None
     camp_phone_primary: str | None = None
     report_count: int = 0
     status_last_confirmed_at: datetime | None = None
@@ -131,6 +127,5 @@ class CampNeed(BaseModel):
     unit: str
     needed_qty: int
     pledged_qty: int
-    urgency: UrgencyLevel
     note: str | None = None
     updated_at: datetime

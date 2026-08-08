@@ -166,7 +166,7 @@ export interface CampsQueryParams {
   readonly q?: string;
   readonly lat?: number;
   readonly lng?: number;
-  readonly sort?: "distance" | "recent" | "urgency";
+  readonly sort?: "distance" | "recent";
   readonly cursor?: string;
   readonly limit?: number;
 }
@@ -174,7 +174,6 @@ export interface CampsQueryParams {
 export interface NeedsQueryParams {
   readonly district_code?: string;
   readonly item_key?: string;
-  readonly urgency?: string;
   readonly cursor?: string;
   readonly limit?: number;
 }
