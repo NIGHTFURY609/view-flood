@@ -15,8 +15,8 @@ export const queryClient = new QueryClient({
       },
     },
     mutations: {
-      // Never retry a write. Double-firing an OTP request, a report submission,
-      // a check-in or a pledge is worse than showing the user an error.
+      // Never retry a write. Double-firing an OTP request, a report submission
+      // or a pledge is worse than showing the user an error.
       retry: 0,
     },
   },
@@ -31,7 +31,6 @@ export const queryKeys = {
   campDetail: (id: string) => ["camps", "detail", id] as const,
   campImages: (id: string) => ["camps", "images", id] as const,
   campNeeds: (id: string) => ["needs", "camp", id] as const,
-  checkins: (id: string) => ["checkins", id] as const,
 
   needsList: (params: object) => ["needs", "list", params] as const,
   emergency: (districtCode?: string) => ["emergency", districtCode ?? "state"] as const,

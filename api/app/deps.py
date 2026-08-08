@@ -17,7 +17,6 @@ from app.db.supabase_rest import SupabaseRest
 from app.services.admin_service import AdminService
 from app.services.camps_service import CampsService
 from app.services.camps_sql_service import CampsSqlService
-from app.services.checkin_service import CheckInService
 from app.services.image_service import ImageService
 from app.services.needs_service import NeedsService
 from app.services.otp_service import OtpService
@@ -63,11 +62,6 @@ def get_report_service(request: Request) -> ReportService:
     return service
 
 
-def get_checkin_service(request: Request) -> CheckInService:
-    service: CheckInService = request.app.state.checkin_service
-    return service
-
-
 def get_needs_service(request: Request) -> NeedsService:
     service: NeedsService = request.app.state.needs_service
     return service
@@ -94,7 +88,6 @@ CampsServiceDep = Annotated[CampsService | CampsSqlService, Depends(get_camps_se
 OtpServiceDep = Annotated[OtpService, Depends(get_otp_service)]
 ImageServiceDep = Annotated[ImageService, Depends(get_image_service)]
 ReportServiceDep = Annotated[ReportService, Depends(get_report_service)]
-CheckInServiceDep = Annotated[CheckInService, Depends(get_checkin_service)]
 NeedsServiceDep = Annotated[NeedsService, Depends(get_needs_service)]
 RequirementServiceDep = Annotated[RequirementService, Depends(get_requirement_service)]
 AdminServiceDep = Annotated[AdminService, Depends(get_admin_service)]

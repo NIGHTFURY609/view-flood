@@ -12,6 +12,8 @@ export interface MapPoint {
   readonly tone: "active" | "inactive" | "predesignated";
 }
 
+
+
 /** Matches the open / closed / government-list token hues. */
 const TONE_COLOR: Record<MapPoint["tone"], string> = {
   active: "#00753c",

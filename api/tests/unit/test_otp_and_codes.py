@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 from app.core.ip import hash_ip, sha256_hex
-from app.services.checkin_service import mask_phone
 from app.services.otp_service import generate_code, hash_code
 from app.services.reference_code import ALPHABET, reference_code
 
@@ -65,11 +62,3 @@ class TestIpHashing:
 
     def test_distinct_ips_hash_differently(self) -> None:
         assert hash_ip("203.0.113.9") != hash_ip("203.0.113.10")
-
-
-class TestMaskPhone:
-    @pytest.mark.parametrize("phone", ["+919876543210", "+918123456789"])
-    def test_only_the_last_four_digits_survive(self, phone: str) -> None:
-        masked = mask_phone(phone)
-        assert masked.endswith(phone[-4:])
-        assert phone[:-4] not in masked

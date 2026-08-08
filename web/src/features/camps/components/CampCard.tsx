@@ -1,4 +1,4 @@
-import { Baby, ChevronRight, Navigation, Phone, ScrollText, Users, UserCheck } from "lucide-react";
+import { ChevronRight, Navigation, Phone } from "lucide-react";
 import { Link } from "react-router";
 
 import {
@@ -9,62 +9,18 @@ import {
   UrgencyBadge,
   VerificationBadge,
 } from "@/shared/components/badges";
-import { Hint } from "@/shared/components/InfoTip";
 import { NeedChips } from "@/shared/components/NeedChips";
-import { useI18n, type DictKey } from "@/shared/i18n";
-import { amenityIcon, type AmenityKey } from "@/shared/lib/amenities";
+import { useI18n } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
 import { displayPhone, formatDistanceKm, formatIst } from "@/shared/lib/format";
 import { googleMapsHref } from "@/shared/lib/maps";
 import type { CampListItem } from "@/shared/types/api";
 
-const MAX_AMENITY_ICONS = 6;
-
-interface Stat {
-  readonly key: string;
-  readonly icon: typeof Users;
-  readonly value: number;
-  readonly labelKey: DictKey;
-}
-
 export function CampCard({ camp }: { camp: CampListItem }) {
-  const { t, tp } = useI18n();
+  const { t } = useI18n();
 
   const path = [camp.district_code, camp.taluk, camp.lsg_name].filter(Boolean).join(" › ");
   const preDesignated = isPreDesignated(camp);
-
-  const stats: readonly Stat[] = (
-    [
-    {
-      key: "people",
-      icon: Users,
-      value: camp.reported_people_count ?? 0,
-      labelKey: "detail.occupancy",
-    },
-    {
-      key: "children",
-      icon: Baby,
-      value: camp.reported_children_count ?? 0,
-      labelKey: "card.childrenCount",
-    },
-    {
-      key: "checkins",
-      icon: UserCheck,
-      value: camp.checkin_count,
-      labelKey: "checkin.title",
-    },
-    {
-      key: "reports",
-      icon: ScrollText,
-      value: camp.report_count,
-      labelKey: "detail.reportedBy",
-    },
-    ] satisfies readonly Stat[]
-  ).filter((stat) => stat.value > 0);
-
-  const amenities = camp.amenities.filter((a): a is AmenityKey => amenityIcon(a) !== null);
-  const shownAmenities = amenities.slice(0, MAX_AMENITY_ICONS);
-  const hiddenAmenityCount = amenities.length - shownAmenities.length;
 
   return (
     <article className="panel flex flex-col overflow-hidden">
@@ -106,45 +62,6 @@ export function CampCard({ camp }: { camp: CampListItem }) {
             </span>
           ) : null}
         </div>
-
-        {stats.length > 0 ? (
-          <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            {stats.map((stat) => (
-              <li key={stat.key}>
-                <Hint label={tp(stat.labelKey, stat.value)}>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <stat.icon className="size-3.5" aria-hidden="true" />
-                    {stat.value}
-                  </span>
-                </Hint>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {shownAmenities.length > 0 ? (
-          <ul aria-label={t("card.amenitiesTitle")} className="flex flex-wrap items-center gap-1">
-            {shownAmenities.map((key) => {
-              const Icon = amenityIcon(key);
-              if (!Icon) return null;
-              return (
-                <li key={key}>
-                  <Hint label={t(`amenity.${key}` as DictKey)}>
-                    <span className="grid size-7 place-items-center rounded-md bg-verified-soft text-verified">
-                      <Icon className="size-3.5" aria-hidden="true" />
-                      <span className="sr-only">{t(`amenity.${key}` as DictKey)}</span>
-                    </span>
-                  </Hint>
-                </li>
-              );
-            })}
-            {hiddenAmenityCount > 0 ? (
-              <li className="text-xs font-semibold text-muted-foreground">
-                +{hiddenAmenityCount}
-              </li>
-            ) : null}
-          </ul>
-        ) : null}
 
         {camp.top_needs.length > 0 ? <NeedChips needs={camp.top_needs} /> : null}
 

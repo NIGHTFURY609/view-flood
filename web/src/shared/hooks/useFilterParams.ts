@@ -70,8 +70,6 @@ export const campListFilterSchema = z.object({
     .transform((v) => v === "true")
     .catch(false),
   q: z.string().trim().max(80).catch("").default(""),
-  /** Comma-separated amenity keys. */
-  amenities: z.string().trim().max(200).catch("").default(""),
   view: z.enum(["card", "list"]).catch("card"),
   page: z.coerce.number().int().min(1).max(500).catch(1),
 });
@@ -84,15 +82,3 @@ export const needsFilterSchema = z.object({
 
 export type CampListFilters = z.infer<typeof campListFilterSchema>;
 export type NeedsFilters = z.infer<typeof needsFilterSchema>;
-
-export function parseAmenities(csv: string): string[] {
-  return csv.split(",").map((s) => s.trim()).filter(Boolean);
-}
-
-export function toggleAmenity(csv: string, key: string): string {
-  const current = parseAmenities(csv);
-  const next = current.includes(key)
-    ? current.filter((k) => k !== key)
-    : [...current, key];
-  return next.join(",");
-}

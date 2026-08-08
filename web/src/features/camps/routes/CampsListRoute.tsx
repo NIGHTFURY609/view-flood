@@ -53,7 +53,6 @@ export function CampsListRoute() {
       ...(values.taluk ? { taluk: values.taluk } : {}),
       ...(values.lsg ? { lsg_name: values.lsg } : {}),
       ...(values.q ? { q: values.q } : {}),
-      ...(values.amenities ? { amenities: values.amenities } : {}),
       ...(values.verified ? { verified_only: true } : {}),
       ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
     };

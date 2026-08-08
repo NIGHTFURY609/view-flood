@@ -74,11 +74,6 @@ export interface CampListItem {
   readonly urgency: UrgencyLevel;
   readonly reported_urgency: UrgencyLevel | null;
   readonly camp_phone_primary: string | null;
-  readonly amenities: readonly string[];
-  readonly reported_people_count: number | null;
-  readonly reported_family_count: number | null;
-  readonly reported_children_count: number | null;
-  readonly checkin_count: number;
   readonly report_count: number;
   readonly status_last_confirmed_at: string | null;
   readonly updated_at: string;
@@ -96,7 +91,6 @@ export interface CampDetail extends CampListItem {
   readonly verified_at: string | null;
   readonly verification_method: string | null;
   readonly verification_note: string | null;
-  readonly occupancy_updated_at: string | null;
   readonly source_published_at: string | null;
   readonly sources: readonly CampSource[];
 }
@@ -147,39 +141,9 @@ export interface PledgeResult {
   readonly needed_qty: number;
 }
 
-// --- check-ins ---------------------------------------------------------------
-
-export interface CheckInMasked {
-  readonly id: string;
-  readonly phone_masked: string;
-  readonly is_open: boolean;
-  readonly note: string | null;
-  readonly people_count: number | null;
-  readonly created_at: string;
-}
-
-export interface CheckInResult {
-  readonly ok: boolean;
-  readonly reason?: "already_phone" | "already_ip";
-  readonly checkin_count: number;
-}
-
-export interface CheckInInput {
-  readonly camp_id: string;
-  readonly phone: string;
-  readonly is_open: boolean;
-  readonly note?: string | null;
-  readonly latitude?: number | null;
-  readonly longitude?: number | null;
-  readonly people_count?: number | null;
-  readonly family_count?: number | null;
-  readonly children_count?: number | null;
-  readonly amenities?: readonly string[];
-}
-
 // --- OTP / reports -----------------------------------------------------------
 
-export type OtpPurpose = "report" | "pledge" | "checkin";
+export type OtpPurpose = "report" | "pledge";
 
 export interface OtpChallenge {
   readonly challenge_id: string;

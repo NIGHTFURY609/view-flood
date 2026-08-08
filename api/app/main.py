@@ -25,7 +25,6 @@ from app.routers import (
     writes,
 )
 from app.services.admin_service import AdminService
-from app.services.checkin_service import CheckInService
 from app.services.image_service import ImageService
 from app.services.needs_service import NeedsService
 from app.services.otp_service import OtpService
@@ -67,7 +66,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.otp_service = otp_service
     app.state.image_service = image_service
     app.state.report_service = ReportService(otp_service, image_service)
-    app.state.checkin_service = CheckInService()
     app.state.needs_service = NeedsService(otp_service)
     app.state.requirement_service = RequirementService()
     app.state.admin_service = AdminService()
@@ -84,7 +82,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         log.warning(
             "writes_disabled",
             detail=(
-                "No SUPABASE_DB_URL. Reads are live; OTP, reports, check-ins, pledges and "
+                "No SUPABASE_DB_URL. Reads are live; OTP, reports, pledges and "
                 "the admin portal return 503 until it is set in apps/api/.env."
             ),
         )

@@ -25,8 +25,7 @@ EARTH_RADIUS_KM = 6371.0
 LIST_COLUMNS = (
     "id,name,name_ml,district_code,taluk,lsg_name,village_or_locality,"
     "latitude,longitude,status,verification_state,urgency,reported_urgency,"
-    "camp_phone_primary,amenities,reported_people_count,reported_family_count,"
-    "reported_children_count,checkin_count,report_count,status_last_confirmed_at,updated_at"
+    "camp_phone_primary,report_count,status_last_confirmed_at,updated_at"
 )
 
 NEED_COLUMNS = (
@@ -36,7 +35,7 @@ NEED_COLUMNS = (
 DETAIL_COLUMNS = (
     LIST_COLUMNS + ",building_type,lsg_type,landmark,camp_incharge_name,"
     "camp_phone_secondary,verified_at,verification_method,verification_note,"
-    "occupancy_updated_at,source_published_at"
+    "source_published_at"
 )
 
 
@@ -75,7 +74,6 @@ class CampsService:
         district_code: str | None = None,
         taluk: str | None = None,
         lsg_name: str | None = None,
-        amenities: str | None = None,
         status: str = "active",
         verified_only: bool = False,
         q: str | None = None,
@@ -99,11 +97,6 @@ class CampsService:
             params["lsg_name"] = f"eq.{lsg_name}"
         if verified_only:
             params["verification_state"] = "eq.verified"
-        if amenities:
-            keys = [a.strip() for a in amenities.split(",") if a.strip()]
-            if keys:
-                # Array contains — "has ALL of these facilities".
-                params["amenities"] = "cs.{" + ",".join(keys) + "}"
         if q:
             # Case-insensitive match across the name fields and the landmark.
             escaped = q.replace(",", " ").replace("*", "")

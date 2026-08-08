@@ -271,7 +271,7 @@ export function CampDetailRoute() {
                   <h3 className="text-sm font-semibold text-[#f85149]">Danger zone</h3>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-sm text-muted-foreground">
-                      Deleting a camp removes it and all its reports, images and check-ins
+                      Deleting a camp removes it and all its reports and images
                       permanently. This cannot be undone.
                     </p>
                     <Button variant="critical" size="sm" onClick={() => setDeleteOpen(true)}>
@@ -343,8 +343,6 @@ function ViewSections({ camp, districtName }: { camp: CampDetail; districtName: 
         <Info label="Status" value={camp.status} className="capitalize" />
         <Info label="Urgency" value={camp.urgency} className="capitalize" />
         <Info label="Verification" value={camp.verification_state.replace("_", " ")} className="capitalize" />
-        <Info label="Reports" value={camp.report_count} />
-        <Info label="Check-ins" value={camp.checkin_count} />
         <Info label="Verified at" value={fmtDate(camp.verified_at)} />
         <Info label="Last updated" value={fmtDate(camp.updated_at)} />
       </Section>
@@ -370,31 +368,6 @@ function ViewSections({ camp, districtName }: { camp: CampDetail; districtName: 
         />
       </Section>
 
-      <Section title="Reported figures">
-        <Info label="People" value={camp.reported_people_count} />
-        <Info label="Families" value={camp.reported_family_count} />
-        <Info label="Children" value={camp.reported_children_count} />
-      </Section>
-
-      {camp.amenities.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Amenities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-1.5">
-              {camp.amenities.map((a) => (
-                <span
-                  key={a}
-                  className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium capitalize text-secondary-foreground"
-                >
-                  {a.replace(/_/g, " ")}
-                </span>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </>
   );
 }
@@ -739,7 +712,7 @@ function DeleteDialog({
           <DialogTitle>Delete this camp?</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          This permanently removes the camp and all its reports, images and check-ins. To confirm,
+          This permanently removes the camp and all its reports and images. To confirm,
           type the camp name below:
         </p>
         <p className="mt-2 rounded-md bg-secondary px-2.5 py-1.5 text-sm font-medium text-foreground">
