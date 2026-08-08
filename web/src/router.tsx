@@ -10,6 +10,7 @@ import { AdminDashboardRoute } from "@/features/admin/routes/AdminDashboardRoute
 import { AdminLoginRoute } from "@/features/admin/routes/AdminLoginRoute";
 import { CampDetailRoute as AdminCampDetailRoute } from "@/features/admin/routes/CampDetailRoute";
 import { CampsManagementRoute } from "@/features/admin/routes/CampsManagementRoute";
+import { DonationsRoute } from "@/features/admin/routes/DonationsRoute";
 import { LogsRoute } from "@/features/admin/routes/LogsRoute";
 import { ReportedCampsRoute } from "@/features/admin/routes/ReportedCampsRoute";
 import { RequirementsRoute } from "@/features/admin/routes/RequirementsRoute";
@@ -69,11 +70,24 @@ export const router = createBrowserRouter([
                 },
               },
               {
+                // Promoted out of the Camps group into its own section.
                 path: "camps/requirements",
+                element: <Navigate to="/admin/requirements" replace />,
+              },
+              {
+                path: "requirements",
                 element: <RequirementsRoute />,
                 handle: {
                   title: "Requirement Requests",
                   subtitle: "Supply requests awaiting review",
+                },
+              },
+              {
+                path: "requirements/donations",
+                element: <DonationsRoute />,
+                handle: {
+                  title: "Donations",
+                  subtitle: "Approved needs and who has pledged against them",
                 },
               },
               {

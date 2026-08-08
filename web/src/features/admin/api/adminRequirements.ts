@@ -2,6 +2,9 @@ import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import { adminClient } from "@/features/admin/api/adminClient";
 import type {
+  AdminNeed,
+  AdminNeedsParams,
+  AdminPledge,
   AdminRequirement,
   AdminRequirementsParams,
   RequirementCounts,
@@ -51,6 +54,34 @@ export function adminCampRequirementsQuery(campId: string) {
       return res.data;
     },
     staleTime: 30_000,
+  });
+}
+
+/** Approved needs and their donation tallies — the "Donations" view. */
+export function adminNeedsQuery(params: AdminNeedsParams) {
+  return queryOptions({
+    queryKey: ["admin", "needs", params],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<Page<AdminNeed>>("/admin/needs", { params, signal });
+      return res.data;
+    },
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Individual donations for one need, with donor details (PII). */
+export function adminNeedPledgesQuery(needId: string, enabled = true) {
+  return queryOptions({
+    queryKey: ["admin", "need", needId, "pledges"],
+    queryFn: async ({ signal }) => {
+      const res = await adminClient.get<AdminPledge[]>(`/admin/needs/${needId}/pledges`, {
+        signal,
+      });
+      return res.data;
+    },
+    staleTime: 30_000,
+    enabled,
   });
 }
 

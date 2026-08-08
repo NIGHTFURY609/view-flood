@@ -125,6 +125,33 @@ class RequirementOut(BaseModel):
     items: list[RequirementItemOut] = []
 
 
+class AdminNeedOut(BaseModel):
+    """An approved need (a camp_needs row) with its donation tally. Admin-only."""
+
+    id: str
+    camp_id: str
+    camp_name: str | None = None
+    district_code: str | None = None
+    item_key: str
+    label: str | None = None
+    unit: str
+    needed_qty: int
+    pledged_qty: int
+    pledge_count: int = 0
+    updated_at: datetime
+
+
+class AdminPledgeOut(BaseModel):
+    """A single donation, including the donor's details. Admin-only (PII)."""
+
+    id: str
+    donor_name: str
+    donor_phone: str
+    quantity: int
+    phone_verified: bool
+    created_at: datetime
+
+
 class RequirementCounts(BaseModel):
     total: int
     by_camp: dict[str, int]

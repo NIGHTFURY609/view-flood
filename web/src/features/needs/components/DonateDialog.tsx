@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { api } from "@/shared/api/client";
+import { isApiError } from "@/shared/api/errors";
 import { queryKeys } from "@/shared/api/queryClient";
 import {
   Dialog,
@@ -18,6 +19,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { normalisePhone } from "@/shared/lib/format";
+import { isCatalogueKey } from "@/shared/lib/needs";
 import type { CampNeed } from "@/shared/types/api";
 
 type Step = "quantity" | "contact" | "otp" | "done";
@@ -43,6 +45,8 @@ export function DonateDialog({
 
   const [step, setStep] = useState<Step>("quantity");
   const [quantity, setQuantity] = useState(String(Math.min(remaining || 1, 10)));
+  const qtyNum = Number(quantity);
+  const overRemaining = qtyNum > remaining;
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -99,7 +103,16 @@ export function DonateDialog({
       void queryClient.invalidateQueries({ queryKey: queryKeys.campNeeds(need.camp_id) });
       void queryClient.invalidateQueries({ queryKey: ["needs", "list"] });
     },
-    onError: () => setError(t("error.otpWrong")),
+    onError: (cause) => {
+      // The server is the backstop for over-pledging: another donor may have
+      // taken the last units between this dialog opening and submitting.
+      if (isApiError(cause) && cause.code === "exceeds_remaining") {
+        setStep("quantity");
+        setError(t("error.pledgeExceeds"));
+        return;
+      }
+      setError(t("error.otpWrong"));
+    },
   });
 
   const busy = requestOtp.isPending || pledge.isPending;
@@ -114,7 +127,11 @@ export function DonateDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t(`need.${need.item_key}` as DictKey)}</DialogTitle>
+          <DialogTitle>
+            {isCatalogueKey(need.item_key)
+              ? t(`need.${need.item_key}` as DictKey)
+              : (need.label ?? need.item_key)}
+          </DialogTitle>
           <DialogDescription>{t("donate.disclaimer")}</DialogDescription>
         </DialogHeader>
 
@@ -132,17 +149,33 @@ export function DonateDialog({
                 type="number"
                 inputMode="numeric"
                 min={1}
-                max={100000}
+                max={remaining}
                 value={quantity}
-                onChange={(event) => setQuantity(event.target.value)}
+                onChange={(event) => {
+                  setError(null);
+                  setQuantity(event.target.value);
+                }}
+                aria-invalid={overRemaining}
               />
             </div>
+            {overRemaining ? (
+              <p role="alert" className="text-xs text-critical">
+                {t("need.onlyNeeded", { count: remaining })}
+              </p>
+            ) : error ? (
+              <p role="alert" className="text-xs text-critical">
+                {error}
+              </p>
+            ) : null}
             <DialogFooter>
               <Button
                 variant="primary"
                 size="lg"
-                disabled={Number(quantity) < 1}
-                onClick={() => setStep("contact")}
+                disabled={qtyNum < 1 || qtyNum > remaining}
+                onClick={() => {
+                  setError(null);
+                  setStep("contact");
+                }}
               >
                 {t("action.continue")}
               </Button>

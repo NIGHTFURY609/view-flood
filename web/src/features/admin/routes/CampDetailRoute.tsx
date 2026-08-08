@@ -22,8 +22,12 @@ import {
   rejectAdminCamp,
   updateAdminCamp,
 } from "@/features/admin/api/adminCamps";
-import { adminCampRequirementsQuery } from "@/features/admin/api/adminRequirements";
+import {
+  adminCampRequirementsQuery,
+  adminNeedsQuery,
+} from "@/features/admin/api/adminRequirements";
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog";
+import { NeedDonationRow } from "@/features/admin/components/NeedDonationRow";
 import { RequirementCard } from "@/features/admin/components/RequirementCard";
 import { districtsQuery, lsgQuery, taluksQuery } from "@/features/camps/api";
 import { Button } from "@/shared/components/ui/button";
@@ -44,7 +48,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { AdminReport, AdminRequirement, CampUpdatePayload } from "@/features/admin/types";
+import type {
+  AdminNeed,
+  AdminReport,
+  AdminRequirement,
+  CampUpdatePayload,
+} from "@/features/admin/types";
 import { cn } from "@/shared/lib/cn";
 import type { CampDetail, VerificationState } from "@/shared/types/api";
 
@@ -89,6 +98,7 @@ export function CampDetailRoute() {
   const images = useQuery(adminCampImagesQuery(campId));
   const reports = useQuery(adminCampReportsQuery(campId));
   const requirements = useQuery(adminCampRequirementsQuery(campId));
+  const campNeeds = useQuery(adminNeedsQuery({ camp_id: campId, limit: 100 }));
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FormState | null>(null);
@@ -265,6 +275,11 @@ export function CampDetailRoute() {
                 <RequirementsCard
                   requirements={requirements.data ?? []}
                   loading={requirements.isPending}
+                />
+
+                <DonationsCard
+                  needs={campNeeds.data?.items ?? []}
+                  loading={campNeeds.isPending}
                 />
 
                 <div className="rounded-xl border border-[#f85149]/40 bg-[#f85149]/5 p-5">
@@ -465,6 +480,29 @@ function RequirementsCard({
                 requirement={requirement}
                 showCamp={false}
               />
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DonationsCard({ needs, loading }: { needs: readonly AdminNeed[]; loading: boolean }) {
+  if (!loading && needs.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Donations</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <div className="m-5 h-16 animate-pulse rounded-lg bg-secondary" />
+        ) : (
+          <ul className="divide-y divide-border/60">
+            {needs.map((need) => (
+              <NeedDonationRow key={need.id} need={need} showCamp={false} />
             ))}
           </ul>
         )}

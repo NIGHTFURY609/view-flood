@@ -197,6 +197,7 @@ export function CampDetailRoute() {
           <ul className="flex flex-col gap-3">
             {(needs.data ?? []).map((need) => {
               const Icon = needIcon(need.item_key);
+              const fulfilled = need.pledged_qty >= need.needed_qty;
               const progress =
                 need.needed_qty > 0
                   ? Math.min(100, Math.round((need.pledged_qty / need.needed_qty) * 100))
@@ -238,9 +239,10 @@ export function CampDetailRoute() {
                     variant="outline"
                     size="sm"
                     className="shrink-0"
+                    disabled={fulfilled}
                     onClick={() => setDonating(need.id)}
                   >
-                    {t("action.donate")}
+                    {fulfilled ? t("need.fulfilled") : t("action.donate")}
                   </Button>
                 </li>
               );

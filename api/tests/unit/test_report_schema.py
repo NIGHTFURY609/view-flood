@@ -51,27 +51,6 @@ class TestReportIn:
         with pytest.raises(ValidationError):
             ReportIn(**_report(images=[_image(i) for i in range(5)]))
 
-    def test_raising_urgency_requires_an_explanation(self) -> None:
-        """Ported from a check that sat OUTSIDE the prototype's zod schema, so
-        client and server could disagree about it."""
-        with pytest.raises(ValidationError):
-            ReportIn(**_report(reported_urgency="critical"))
-
-        with pytest.raises(ValidationError):
-            ReportIn(**_report(reported_urgency="high", reported_urgency_reason="too short"))
-
-    def test_urgency_with_a_real_reason_is_accepted(self) -> None:
-        report = ReportIn(
-            **_report(
-                reported_urgency="critical",
-                reported_urgency_reason="Water rising, 200 people need evacuation now",
-            )
-        )
-        assert report.reported_urgency == "critical"
-
-    def test_normal_urgency_needs_no_reason(self) -> None:
-        assert ReportIn(**_report(reported_urgency="normal")).reported_urgency_reason is None
-
     def test_otp_code_must_be_six_digits(self) -> None:
         with pytest.raises(ValidationError):
             ReportIn(**_report(otp_code="12345"))

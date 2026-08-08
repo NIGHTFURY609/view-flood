@@ -21,7 +21,7 @@ import {
 import { needsFilterSchema, useFilterParams } from "@/shared/hooks/useFilterParams";
 import { useI18n, type DictKey } from "@/shared/i18n";
 import { cn } from "@/shared/lib/cn";
-import { NEED_ITEMS, needIcon } from "@/shared/lib/needs";
+import { isCatalogueKey, NEED_ITEMS, needIcon } from "@/shared/lib/needs";
 
 const PAGE_SIZE = 30;
 const ALL = "__all__";
@@ -164,7 +164,9 @@ export function NeedsRoute() {
 
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-foreground">
-                        {t(`need.${need.item_key}` as DictKey)}
+                        {isCatalogueKey(need.item_key)
+                          ? t(`need.${need.item_key}` as DictKey)
+                          : (need.label ?? need.item_key)}
                       </span>
                       <span className="block text-xs text-muted-foreground">
                         {t("need.progress", {

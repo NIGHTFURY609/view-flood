@@ -224,6 +224,86 @@ class RequirementService:
                 parent["items"].append({**dict(item), "id": str(item["id"])})
         return out
 
+    async def list_needs_for_admin(
+        self,
+        connection: asyncpg.Connection,
+        *,
+        district_code: str | None = None,
+        item_key: str | None = None,
+        camp_id: str | None = None,
+        q: str | None = None,
+        offset: int = 0,
+        limit: int = 25,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Approved needs (camp_needs) across camps, with a live donation tally."""
+        where: list[str] = ["TRUE"]
+        args: list[Any] = []
+
+        def add(clause: str, value: Any) -> None:
+            args.append(value)
+            where.append(clause.format(n=len(args)))
+
+        if district_code:
+            add("c.district_code = ${n}", district_code)
+        if item_key:
+            add("n.item_key = ${n}", item_key)
+        if camp_id:
+            add("n.camp_id = ${n}::uuid", camp_id)
+        if q:
+            add("(c.name ILIKE '%' || ${n} || '%' OR n.label ILIKE '%' || ${n} || '%')", q)
+
+        clause = " AND ".join(where)
+
+        total = await connection.fetchval(
+            f"""
+            SELECT count(*) FROM camp_needs n
+            JOIN camps c ON c.id = n.camp_id
+            WHERE {clause}
+            """,
+            *args,
+        )
+
+        rows = await connection.fetch(
+            f"""
+            SELECT n.id, n.camp_id, c.name AS camp_name, c.district_code,
+                   n.item_key, n.label, n.unit, n.needed_qty, n.pledged_qty,
+                   n.updated_at,
+                   (SELECT count(*) FROM need_pledges p WHERE p.need_id = n.id) AS pledge_count
+            FROM camp_needs n
+            JOIN camps c ON c.id = n.camp_id
+            WHERE {clause}
+            ORDER BY n.updated_at DESC, n.id DESC
+            LIMIT ${len(args) + 1} OFFSET ${len(args) + 2}
+            """,
+            *args,
+            limit,
+            offset,
+        )
+
+        out = []
+        for row in rows:
+            record = dict(row)
+            record["id"] = str(record["id"])
+            record["camp_id"] = str(record["camp_id"])
+            record["pledge_count"] = int(record["pledge_count"] or 0)
+            out.append(record)
+        return out, (total or 0)
+
+    async def pledges_for_need(
+        self, connection: asyncpg.Connection, need_id: str
+    ) -> list[dict[str, Any]]:
+        """Individual donations for a need, newest first. Carries donor PII."""
+        rows = await connection.fetch(
+            """
+            SELECT id, donor_name, donor_phone, quantity, phone_verified, created_at
+            FROM need_pledges
+            WHERE need_id = $1::uuid
+            ORDER BY created_at DESC
+            """,
+            need_id,
+        )
+        return [{**dict(row), "id": str(row["id"])} for row in rows]
+
     async def pending_counts(self, connection: asyncpg.Connection) -> tuple[int, dict[str, int]]:
         rows = await connection.fetch(
             """
